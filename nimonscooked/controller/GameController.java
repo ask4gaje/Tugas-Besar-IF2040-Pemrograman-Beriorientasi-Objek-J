@@ -28,7 +28,7 @@ public class GameController {
         }.start();
     }
 
-    public void bindInput(Scene scene) {
+    public void input(Scene scene) {
         scene.setOnKeyPressed(e -> {
             KeyCode k = e.getCode();
             switch(k) {
