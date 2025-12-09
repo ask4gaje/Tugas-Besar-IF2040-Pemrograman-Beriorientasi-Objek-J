@@ -1,7 +1,7 @@
 package org.example.map.station;
 
 import org.example.Position;
-import org.example.item.IngredientType;
+import org.example.items.IngredientType;
 
 public class IngredientStorage extends AbstractStation {
     private final IngredientType type;

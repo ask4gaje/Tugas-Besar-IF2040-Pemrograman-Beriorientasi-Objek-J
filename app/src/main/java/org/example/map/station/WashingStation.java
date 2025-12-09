@@ -1,8 +1,9 @@
 package org.example.map.station;
 
 import org.example.Position;
-import java.util.LinkedList;
-import org.example.item.Item; 
+import org.example.items.Item;
+
+import java.util.LinkedList; 
 
 // Washing Station perlu Collections (LinkedList/Queue) untuk tumpukan piring kotor.
 public class WashingStation extends AbstractStation {

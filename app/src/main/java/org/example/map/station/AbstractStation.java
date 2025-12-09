@@ -1,8 +1,8 @@
 package org.example.map.station;
 
 import org.example.Position;
+import org.example.items.Item;
 import org.example.map.Tile;
-import org.example.item.Item; // Perlu diimpor
 
 public abstract class AbstractStation implements Tile {
     protected Position position;

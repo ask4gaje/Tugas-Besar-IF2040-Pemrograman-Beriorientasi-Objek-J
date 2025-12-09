@@ -1,7 +1,7 @@
 package org.example.map;
 
 import org.example.Position;
-import org.example.item.Item;
+import org.example.items.Item;
 
 public class WallTile implements Tile {
     private final Position position;

@@ -1,7 +1,7 @@
 package org.example.map;
 
 import org.example.Position;
-import org.example.item.Item; // Import Item yang baru dibuat
+import org.example.items.Item;
 
 public interface Tile {
     Position getPosition();

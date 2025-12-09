@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.example.Position;
 import org.example.config.MapLayouts;
-import org.example.item.IngredientType;
+import org.example.items.IngredientType;
 import org.example.map.station.*; // Import semua kelas Station
 
 // Menggunakan Generics (Wajib OOP)

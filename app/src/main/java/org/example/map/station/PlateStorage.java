@@ -1,23 +1,48 @@
 package org.example.map.station;
 
 import org.example.Position;
-import org.example.item.Item;
+import org.example.items.Item;
+import org.example.items.Plate; // Asumsi ada CleanPlate
 
-import java.util.Stack; // Stack adalah pilihan yang baik untuk tumpukan piring
+import java.util.Stack; 
 
 public class PlateStorage extends AbstractStation {
-    // Menggunakan Collections (Stack) untuk tumpukan piring.
-    // Anggota 3 akan menggunakan ini untuk tumpukan kotor/bersih
-    private final Stack<Item> plateStack = new Stack<>(); 
+    // Stack untuk tumpukan piring bersih
+    private final Stack<Item> cleanPlateStack = new Stack<>(); 
+    // Stack untuk tumpukan piring kotor (jika ada) - Dihilangkan, kotoran masuk ke WashingStation
     
     public PlateStorage(Position position) {
         super(position);
-        // Pada inisialisasi, Plate Storage harus diisi dengan plate bersih awal (4 Plate)
-        // plateStack.push(new CleanPlate()); // Anggota 2/3 yang membuat Plate.java
+        // Pada inisialisasi, Plate Storage diisi dengan plate bersih awal (4 Plate)
+        for (int i = 0; i < 4; i++) {
+             // Asumsi CleanPlate() adalah konstruktor yang valid
+            // cleanPlateStack.push(new CleanPlate()); 
+        }
+        System.out.println("Plate Storage initialized with 4 clean plates (placeholder).");
     }
 
-    public Stack<Item> getPlateStack() {
-        return plateStack;
+    public Stack<Item> getCleanPlateStack() {
+        return cleanPlateStack;
     }
-    // Anggota 3 akan mengimplementasikan logika stack piring kotor/bersih yang kompleks.
+    
+    // Logika mengambil piring bersih
+    public Item takeCleanPlate() {
+        if (!cleanPlateStack.isEmpty()) {
+            return cleanPlateStack.pop();
+        }
+        return null;
+    }
+    
+    // Logika menaruh piring (asumsi, hanya menerima piring bersih untuk ditumpuk)
+    public boolean putPlate(Item item) {
+        // Anggota 3: Validasi bahwa item adalah piring bersih.
+        if (item instanceof Plate) {
+            if (((Plate) item).isClean()){
+            cleanPlateStack.push(item);
+            return true;
+            }
+        }
+        System.out.println("Only clean plates can be put here.");
+        return false;
+    }
 }
