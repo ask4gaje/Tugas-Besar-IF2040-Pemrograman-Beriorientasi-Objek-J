@@ -11,12 +11,12 @@ public class MapLayouts {
         //   1  2  3  4  5  6  7  8  9 10 11 12 13 14 (X-Axis)
         "XXXXXAAIAAXXXX", // 1
         "C..XXA...AX..A", // 2
-        "I..XXRV..RXX.P", // 3 (V=Spawn Chef Point)
-        "C..... .... ..S", // 4
-        "I.......... ..S", // 5
-        "C..XXR..VRXX.A", // 6 (V=Spawn Chef Point)
+        "I..XXRV..RX..P", // 3 (V=Spawn Chef Point)
+        "C............S", // 4
+        "I............S", // 5
+        "C..XXR..VRX..A", // 6 (V=Spawn Chef Point)
         "I..AXA...AX..A", // 7
-        "AWW A X A...AX..A", // 8
+        "AWWAXA...AX..A", // 8
         "XXXXXAAIAAX..T", // 9
         "XXXXXXXXXXXXXX"  // 10
     };
