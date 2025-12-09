@@ -15,7 +15,7 @@ public class GameWindow extends Application {
         GameController controller = new GameController(model, view);
 
         Scene scene = new Scene(view);
-        controller.bindInput(scene);
+        controller.input(scene);
 
         stage.setScene(scene);
         stage.setTitle("NimonsCooked");
