@@ -1,7 +1,19 @@
-package org.example.item;
+package items;
 
-public interface Item {
-    String getName();
-    // Item harus bisa diletakkan di lantai, jadi perlu posisi.
-    // Position getCurrentPosition();
+public abstract class Item {
+    protected String name;
+
+    public Item(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+
+    @Override
+    public String toString() {
+        return name;
+    }
 }
