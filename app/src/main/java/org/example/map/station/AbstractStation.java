@@ -3,6 +3,7 @@ package org.example.map.station;
 import org.example.chef.Position;
 import org.example.item.Item;
 import org.example.map.Tile;
+import org.example.chef.Chef;
 
 public abstract class AbstractStation implements Tile {
     protected Position position;
@@ -32,4 +33,7 @@ public abstract class AbstractStation implements Tile {
     public void setItemOnTile(Item item) {
         this.itemOnTile = item;
     }
+
+    @Override
+    public abstract void interact(Chef chef);
 }

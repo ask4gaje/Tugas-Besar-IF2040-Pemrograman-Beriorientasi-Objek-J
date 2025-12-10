@@ -1,34 +1,25 @@
 package org.example.map.station;
 
+import org.example.chef.Chef;
 import org.example.chef.Position;
 import org.example.item.Item;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TrashStation extends AbstractStation {
+    private static final Logger LOGGER = LoggerFactory.getLogger(TrashStation.class);
+
     public TrashStation(Position position) {
         super(position);
     }
-    
-    // Logika untuk membuang item. Item yang ditaruh akan langsung hilang.
+
     @Override
-    public void setItemOnTile(Item item) {
-        if (item != null) {
-            // Item dibuang
-            System.out.println("Item thrown away: " + item.toString());
-        }
-        // itemOnTile tidak pernah diisi di TrashStation, selalu null setelah aksi
-        this.itemOnTile = null; 
-    }
-    
-    // Item tidak dapat diambil dari TrashStation
-    @Override
-    public Item getItemOnTile() {
-        return null;
-    }
-    
-    // Tambahan: Method eksplisit untuk membuang item yang dibawa oleh pemain/chef
-    public void trashItem(Item itemToTrash) {
-        if (itemToTrash != null) {
-            System.out.println("Item trashed by player: " + itemToTrash.toString());
+    public void interact(Chef chef) {
+        // Jika chef bawa item, buang itemnya
+        if (chef.getInventory() != null) {
+            Item item = chef.dropItem();
+            LOGGER.info("{} threw away {}.", chef.getName(), item.getName());
+            // Item hilang (tidak disimpan di station)
         }
     }
 }

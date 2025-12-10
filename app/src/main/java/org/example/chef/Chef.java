@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
     public class Chef {
         private static final Logger LOGGER = LoggerFactory.getLogger(org.example.chef.Chef.class.getName());
 
-    private final String id;
     private final String name;
     private Position position;
     private Direction direction;
@@ -25,7 +24,6 @@ import org.slf4j.LoggerFactory;
     private boolean isActive; 
 
     public Chef(String id, String name, Position startPosition) {
-        this.id = id;
         this.name = name;
         this.position = startPosition;
         this.direction = Direction.RIGHT; 
@@ -45,50 +43,39 @@ import org.slf4j.LoggerFactory;
         int targetX = position.getX() + dir.dx;
         int targetY = position.getY() + dir.dy;
 
-        if (map.isValidMove(targetX, targetY)) {
+        Tile targetTile = map.getTile(targetX, targetY);
+
+        if (targetTile.isWalkable()) {
             this.position.setX(targetX);
             this.position.setY(targetY);
         } else {
-            LOGGER.fine(name + " bumped into an obstacle.");
+            LOGGER.debug(name + " bumped into an obstacle.");
         }
     }
+
 
     public void interact(GameMap map) {
         if (currentAction == ChefActionState.BUSY) return;
+    
         int targetX = position.getX() + direction.dx;
         int targetY = position.getY() + direction.dy;
+    
+        try {
         Tile targetTile = map.getTile(targetX, targetY);
+        targetTile.interact(this);
+        
+        } catch (Exception e) {
+            LOGGER.error("Interaction error: {}", e.getMessage());
+        }
+}
 
-        if (targetTile.isWalkable()){
-            handleFloorInteraction((WalkableTile) targetTile);
-        }
-
-        else {
-            return;
-        }
-    }
-
-    private void handleFloorInteraction(WalkableTile tile) {
-        if (this.inventory == null && tile.hasItem()) {
-            this.inventory = tile.takeItem();
-            LOGGER.info("{} picked up {} from floor.", name, inventory.getName());
-        }
-        else if (this.inventory != null && !tile.hasItem()) {
-            tile.placeItem(this.inventory);
-            this.inventory = null;
-            LOGGER.info("{} dropped item on floor.", name);
-        }
-        else{
-            LOGGER.info("{} dropped item on floor.", name);
-        }
-    }
 
     public void setInventory(Item item) {
         if (this.inventory != null && item != null) {
             if (tryCombine(this.inventory, item)) {
                 return; 
             }
-            LOGGER.warning("Inventory full! Cannot take " + item.getName());
+            LOGGER.warn("Inventory full! Cannot take " + item.getName());
             return;
         }
         this.inventory = item;

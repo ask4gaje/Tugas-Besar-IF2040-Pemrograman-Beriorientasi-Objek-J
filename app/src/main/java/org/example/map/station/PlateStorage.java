@@ -1,48 +1,37 @@
 package org.example.map.station;
 
+import org.example.chef.Chef;
+import org.example.chef.Position;
 import org.example.item.Item;
 import org.example.item.Plate;
-import org.example.chef.Position;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.Stack; 
 
 public class PlateStorage extends AbstractStation {
-    // Stack untuk tumpukan piring bersih
+    private static final Logger LOGGER = LoggerFactory.getLogger(PlateStorage.class);
     private final Stack<Item> cleanPlateStack = new Stack<>();
-    // Stack untuk tumpukan piring kotor (jika ada) - Dihilangkan, kotoran masuk ke WashingStation
     
     public PlateStorage(Position position) {
         super(position);
-        // Pada inisialisasi, Plate Storage diisi dengan plate bersih awal (4 Plate)
+        // Isi awal 4 piring
         for (int i = 0; i < 4; i++) {
-             // Asumsi CleanPlate() adalah konstruktor yang valid
-            // cleanPlateStack.push(new CleanPlate()); 
+            cleanPlateStack.push(new Plate()); 
         }
-        System.out.println("Plate Storage initialized with 4 clean plates (placeholder).");
     }
 
-    public Stack<Item> getCleanPlateStack() {
-        return cleanPlateStack;
+    @Override
+    public void interact(Chef chef) {
+        // Chef ambil piring
+        if (chef.getInventory() == null && !cleanPlateStack.isEmpty()) {
+            chef.setInventory(cleanPlateStack.pop());
+            LOGGER.info("{} took a clean plate. Remaining: {}", chef.getName(), cleanPlateStack.size());
+        }
+        // (Optional) Chef taruh piring bersih kembali?
+        // Sesuai spec biasanya Plate Storage hanya output, tapi bisa ditambah logic put jika perlu.
     }
     
-    // Logika mengambil piring bersih
-    public Item takeCleanPlate() {
-        if (!cleanPlateStack.isEmpty()) {
-            return cleanPlateStack.pop();
-        }
-        return null;
-    }
-    
-    // Logika menaruh piring (asumsi, hanya menerima piring bersih untuk ditumpuk)
-    public boolean putPlate(Item item) {
-        // Anggota 3: Validasi bahwa item adalah piring bersih.
-        if (item instanceof Plate) {
-            if (((Plate) item).isClean()){
-            cleanPlateStack.push(item);
-            return true;
-            }
-        }
-        System.out.println("Only clean plates can be put here.");
-        return false;
+    public void returnCleanPlate(Item plate) {
+        cleanPlateStack.push(plate);
     }
 }

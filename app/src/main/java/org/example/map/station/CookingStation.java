@@ -1,5 +1,6 @@
 package org.example.map.station;
 
+import org.example.chef.Chef;
 import org.example.chef.Position;
 import org.example.item.Item;
 
@@ -76,4 +77,15 @@ public class CookingStation extends AbstractStation {
     public int getCookingProgress() {
         return cookingProgress;
     }
+    @Override
+    public void interact(Chef chef) {
+    // Taruh item
+        if (itemOnTile == null && chef.getInventory() != null) {
+        this.itemOnTile = chef.dropItem();
+        }
+        else if (itemOnTile != null && chef.getInventory() == null) {
+        // Logic cek ingredient dan start cutting thread...
+        // chef.performLongAction(...)
+        }
+}
 }
