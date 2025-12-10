@@ -24,6 +24,7 @@ public class GameManager {
     private GameMap currentMap;
     private Position chefSpawnA;
     private Position chefSpawnB;
+    private List<Chef> chefs;
 
     // Atribut Concurrency dan Stage Over
     private ScheduledExecutorService timerScheduler;
@@ -77,6 +78,11 @@ public class GameManager {
 
     public void startGame() {
         if (currentState == GameState.PLAYING) return;
+        
+        chefs = new ArrayList<>();
+        chefs.add(new Chef("C1", "Chef A", chefSpawnA));
+        chefs.add(new Chef("C2", "Chef B", chefSpawnB));
+        chefs.get(0).setActive(true);
 
         this.currentState = GameState.PLAYING;
         this.failedOrderCount = 0; // Reset
@@ -172,5 +178,8 @@ public class GameManager {
         return failedOrderCount;
     }
 
+    public List<Chef> getChefs() {
+        return chefs;
+    }
     // ... method lain
 }
