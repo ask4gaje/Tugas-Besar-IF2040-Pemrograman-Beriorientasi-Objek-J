@@ -4,6 +4,7 @@ import org.example.item.Item;
 import org.example.item.KitchenUtensil;
 import org.example.item.Dish;
 import org.example.item.Ingredient;
+import org.example.map.WalkableTile;
 import org.example.map.GameMap;
 import org.example.map.Tile;
 import org.example.map.station.AbstractStation;
@@ -12,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
     public class Chef {
-        private static final Logger LOGGER = LoggerFactory.getLogger(org.example.chef.Chef.class.getName())
+        private static final Logger LOGGER = LoggerFactory.getLogger(org.example.chef.Chef.class.getName());
 
     private final String id;
     private final String name;
@@ -58,18 +59,16 @@ import org.slf4j.LoggerFactory;
         int targetY = position.getY() + direction.dy;
         Tile targetTile = map.getTile(targetX, targetY);
 
-        if (targetTile == null) return;
+        if (targetTile.isWalkable()){
+            handleFloorInteraction((WalkableTile) targetTile);
+        }
 
-        if (targetTile.hasStation()) {
-            Station station = targetTile.getStation();
-            station.interact(this); 
-        } 
         else {
-             handleFloorInteraction(targetTile);
+            return;
         }
     }
 
-    private void handleFloorInteraction(Tile tile) {
+    private void handleFloorInteraction(WalkableTile tile) {
         if (this.inventory == null && tile.hasItem()) {
             this.inventory = tile.takeItem();
             LOGGER.info("{} picked up {} from floor.", name, inventory.getName());
@@ -77,6 +76,9 @@ import org.slf4j.LoggerFactory;
         else if (this.inventory != null && !tile.hasItem()) {
             tile.placeItem(this.inventory);
             this.inventory = null;
+            LOGGER.info("{} dropped item on floor.", name);
+        }
+        else{
             LOGGER.info("{} dropped item on floor.", name);
         }
     }
