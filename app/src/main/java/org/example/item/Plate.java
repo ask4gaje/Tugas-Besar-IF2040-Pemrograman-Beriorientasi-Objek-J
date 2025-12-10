@@ -1,6 +1,7 @@
-package items.utensils;
+package org.example.item;
 
-import items.dishes.Dish;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Plate extends KitchenUtensil {
     private boolean isClean;
@@ -28,7 +29,7 @@ public class Plate extends KitchenUtensil {
         this.name = "Plate";
     }
 
-    public void addDishComponent(items.ingredients.Ingredient ingredient) {
+    public void addDishComponent(Ingredient ingredient) {
         if (!isClean) return; 
         if (currentDish == null) {
             currentDish = new Dish();
@@ -40,5 +41,15 @@ public class Plate extends KitchenUtensil {
 
     public Dish getDish() {
         return currentDish;
+    }
+
+    @Override
+    public boolean canAccept(Ingredient ingredient) {
+        return false;
+    }
+
+    @Override
+    public void addIngredient(Ingredient ingredient) {
+
     }
 }

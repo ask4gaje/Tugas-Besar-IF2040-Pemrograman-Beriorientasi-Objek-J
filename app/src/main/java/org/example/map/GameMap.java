@@ -2,9 +2,9 @@ package org.example.map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.example.Position;
+import org.example.chef.Position;
 import org.example.config.MapLayouts;
-import org.example.items.IngredientType;
+import org.example.item.IngredientType;
 import org.example.map.station.*; // Import semua kelas Station
 
 // Menggunakan Generics (Wajib OOP)
@@ -90,7 +90,7 @@ public class GameMap {
                         grid[y][x] = new WashingStation(pos);
                         break;
                     case 'I':
-                        grid[y][x] = new IngredientStorage(pos, IngredientType.get(x, y)); // Anggota 2/3 harus sediakan logic ini
+                        grid[y][x] = new IngredientStorage(pos, IngredientType.MEAT); // Anggota 2/3 harus sediakan logic ini
                         break;
                     case 'P':
                         grid[y][x] = new PlateStorage(pos);

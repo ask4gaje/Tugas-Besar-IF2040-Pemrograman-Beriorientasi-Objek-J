@@ -1,3 +1,5 @@
+package org.example.chef;
+
 public class Position {
     private int x;
     private int y;

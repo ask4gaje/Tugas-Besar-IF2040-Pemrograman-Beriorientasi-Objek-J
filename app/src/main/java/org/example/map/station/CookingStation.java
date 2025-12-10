@@ -1,7 +1,7 @@
 package org.example.map.station;
 
-import org.example.Position;
-import org.example.items.Item;
+import org.example.chef.Position;
+import org.example.item.Item;
 
 public class CookingStation extends AbstractStation {
     // Cooking Station dapat menampung Kitchen Utensils (Frying Pan/Boiling Pot)

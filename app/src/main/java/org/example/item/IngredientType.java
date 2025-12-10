@@ -1,4 +1,7 @@
-package items.ingredients;
+package org.example.item;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public enum IngredientType {
     BUN("Roti", true),      

@@ -1,9 +1,7 @@
-package items.utensils;
+package org.example.item;
 
-import items.ingredients.Ingredient;
-import items.ingredients.IngredientType;
-import items.interfaces.CookingDevice;
-import items.interfaces.Preparable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class FryingPan extends KitchenUtensil implements CookingDevice {
     private boolean isCooking;
@@ -24,7 +22,7 @@ public class FryingPan extends KitchenUtensil implements CookingDevice {
     }
 
     @Override
-    public boolean canAccept(Preparable ingredient) {
+    public boolean canAccept(Ingredient ingredient) {
         if (ingredient instanceof Ingredient) {
             Ingredient i = (Ingredient) ingredient;
             return i.getType() == IngredientType.MEAT && !isCooking && contents.isEmpty();
@@ -33,8 +31,8 @@ public class FryingPan extends KitchenUtensil implements CookingDevice {
     }
 
     @Override
-    public void addIngredient(Preparable ingredient) {
-        if (canAccept(ingredient)) {
+    public void addIngredient(Ingredient ingredient) {
+        if (canAccept((Ingredient) ingredient)) {
             this.contents.add(ingredient);
         }
     }

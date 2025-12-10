@@ -1,4 +1,7 @@
-package items;
+package org.example.item;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class Item {
     protected String name;

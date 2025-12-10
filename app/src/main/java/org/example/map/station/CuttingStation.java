@@ -1,7 +1,7 @@
 package org.example.map.station;
 
-import org.example.Position;
-import org.example.items.Item;
+import org.example.chef.Position;
+import org.example.item.Item;
 
 public class CuttingStation extends AbstractStation {
     private static final int MAX_CUTTING_PROGRESS = 3; // Contoh: Perlu 3 kali aksi untuk selesai

@@ -1,7 +1,7 @@
 package org.example.map.station;
 
-import org.example.Position;
-import org.example.items.Item;
+import org.example.chef.Position;
+import org.example.item.Item;
 import org.example.map.Tile;
 
 public abstract class AbstractStation implements Tile {

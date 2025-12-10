@@ -1,4 +1,7 @@
-package items.interfaces;
+package org.example.item;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public interface Preparable {
     boolean canBeChopped();
@@ -9,13 +12,3 @@ public interface Preparable {
     void burn(); 
 }
 
-
-package items.interfaces;
-
-public interface CookingDevice {
-    boolean isPortable();
-    int capacity();
-    boolean canAccept(Preparable ingredient);
-    void addIngredient(Preparable ingredient);
-    void startCooking();
-}

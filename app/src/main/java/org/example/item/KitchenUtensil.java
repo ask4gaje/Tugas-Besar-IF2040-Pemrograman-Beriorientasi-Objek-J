@@ -1,9 +1,9 @@
-package items.utensils;
+package org.example.item;
 
-import items.Item;
-import items.interfaces.Preparable;
 import java.util.ArrayList;
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public abstract class KitchenUtensil extends Item {
     protected List<Preparable> contents; 
@@ -20,4 +20,8 @@ public abstract class KitchenUtensil extends Item {
     public void clearContents() {
         contents.clear();
     }
+
+    public abstract boolean canAccept(Ingredient ingredient);
+
+    public abstract void addIngredient(Ingredient ingredient);
 }

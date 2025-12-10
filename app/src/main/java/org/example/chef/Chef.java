@@ -1,15 +1,18 @@
-import java.util.logging.Logger; 
-import items.Item;
-import items.KitchenUtensil;
-import items.Dish;
-import items.Ingredient;
-import map.GameMap;
-import map.Tile;
-import stations.Station;
+package org.example.chef;
 
-public class Chef {
-    private static final Logger LOGGER = Logger.getLogger(Chef.class.getName());
+import org.example.item.Item;
+import org.example.item.KitchenUtensil;
+import org.example.item.Dish;
+import org.example.item.Ingredient;
+import org.example.map.GameMap;
+import org.example.map.Tile;
+import org.example.map.station.AbstractStation;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+    public class Chef {
+        private static final Logger LOGGER = LoggerFactory.getLogger(org.example.chef.Chef.class.getName())
 
     private final String id;
     private final String name;
@@ -69,12 +72,12 @@ public class Chef {
     private void handleFloorInteraction(Tile tile) {
         if (this.inventory == null && tile.hasItem()) {
             this.inventory = tile.takeItem();
-            LOGGER.info(name + " picked up " + inventory.getName() + " from floor.");
+            LOGGER.info("{} picked up {} from floor.", name, inventory.getName());
         }
         else if (this.inventory != null && !tile.hasItem()) {
             tile.placeItem(this.inventory);
             this.inventory = null;
-            LOGGER.info(name + " dropped item on floor.");
+            LOGGER.info("{} dropped item on floor.", name);
         }
     }
 
@@ -101,8 +104,7 @@ public class Chef {
 
     private boolean tryCombine(Item handItem, Item targetItem) {
         if (handItem instanceof KitchenUtensil && targetItem instanceof Dish) {
-             KitchenUtensil utensil = (KitchenUtensil) handItem;
-             return true;
+            return true;
         }
         return false;
     }
@@ -113,7 +115,7 @@ public class Chef {
 
         new Thread(() -> {
             try {
-                LOGGER.info(name + " started working (BUSY)...");
+                LOGGER.info("{} started working (BUSY)...", name);
                 this.currentAction = ChefActionState.BUSY;
 
                 Thread.sleep(durationSeconds * 1000L);
@@ -123,11 +125,11 @@ public class Chef {
                 }
 
             } catch (InterruptedException e) {
-                LOGGER.severe(name + " action interrupted!");
+                LOGGER.error("{} action interrupted!", name);
                 Thread.currentThread().interrupt();
             } finally {
                 this.currentAction = ChefActionState.IDLE;
-                LOGGER.info(name + " finished working (IDLE).");
+                LOGGER.info("{} finished working (IDLE).", name);
             }
         }).start();
     }

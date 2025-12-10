@@ -1,7 +1,7 @@
-package items.ingredients;
+package org.example.item;
 
-import items.Item;
-import items.interfaces.Preparable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Ingredient extends Item implements Preparable {
     private final IngredientType type;

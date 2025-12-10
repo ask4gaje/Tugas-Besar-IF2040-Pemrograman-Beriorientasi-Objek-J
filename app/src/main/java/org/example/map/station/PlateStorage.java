@@ -1,14 +1,14 @@
 package org.example.map.station;
 
-import org.example.Position;
-import org.example.items.Item;
-import org.example.items.Plate; // Asumsi ada CleanPlate
+import org.example.item.Item;
+import org.example.item.Plate;
+import org.example.chef.Position;
 
 import java.util.Stack; 
 
 public class PlateStorage extends AbstractStation {
     // Stack untuk tumpukan piring bersih
-    private final Stack<Item> cleanPlateStack = new Stack<>(); 
+    private final Stack<Item> cleanPlateStack = new Stack<>();
     // Stack untuk tumpukan piring kotor (jika ada) - Dihilangkan, kotoran masuk ke WashingStation
     
     public PlateStorage(Position position) {

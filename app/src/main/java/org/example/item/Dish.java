@@ -1,10 +1,10 @@
-package items.dishes;
+package org.example.item;
 
-import items.Item;
-import items.ingredients.Ingredient;
-import items.interfaces.Preparable;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Dish extends Item {
     private List<Ingredient> components;
@@ -37,7 +37,7 @@ public class Dish extends Item {
         this.name = sb.toString();
     }
     
-    public boolean contains(items.ingredients.IngredientType type) {
+    public boolean contains(IngredientType type) {
         for (Ingredient i : components) {
             if (i.getType() == type) return true;
         }
