@@ -43,6 +43,11 @@ public class GameView extends BorderPane {
                     case COOK -> g.setFill(Color.ORANGE);
                     case INGREDIENT -> g.setFill(Color.CYAN);
                     case SERVE -> g.setFill(Color.YELLOW);
+                    case ASSEMBLE -> g.setFill(Color.GREEN);
+                    case WASH -> g.setFill(Color.ALICEBLUE);
+                    case PLATE -> g.setFill(Color.PEACHPUFF);
+                    case TRASH -> g.setFill(Color.BLACK);
+                    case SPAWN -> g.setFill(Color.DARKRED);
                 }
 
                 g.fillRect(x*s, y*s, s, s);
@@ -87,3 +92,4 @@ public class GameView extends BorderPane {
         }
     }
 }
+
