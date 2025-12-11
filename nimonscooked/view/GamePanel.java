@@ -88,6 +88,11 @@ public class GamePanel implements GameModelListener {
                     case COOK -> g.setFill(Color.web("#f27c7c"));
                     case INGREDIENT -> g.setFill(Color.web("#c2e0ff"));
                     case SERVE -> g.setFill(Color.web("#ffd88a"));
+                    case ASSEMBLE -> g.setFill(Color.web("#67b87c"));
+                    case WASH -> g.setFill(Color.web("#cd1846"));
+                    case PLATE -> g.setFill(Color.web("#f47c36"));
+                    case TRASH -> g.setFill(Color.web("#553f0e"));
+                    case SPAWN -> g.setFill(Color.web("#054a4a"));
                 }
                 g.fillRect(sx, sy, TILE, TILE);
                 g.setStroke(Color.color(0,0,0,0.15));
@@ -146,3 +151,4 @@ public class GamePanel implements GameModelListener {
         }
     }
 }
+
