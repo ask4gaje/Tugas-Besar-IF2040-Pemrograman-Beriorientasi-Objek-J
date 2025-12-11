@@ -43,15 +43,45 @@ public class GameModel {
                 grid[x][y] = new Tile(x,y, TileType.FLOOR);
             }
         }
-        grid[2][1].type = TileType.CUT;
-        grid[6][2].type = TileType.INGREDIENT;
-        grid[9][2].type = TileType.COOK;
-        grid[13][4].type = TileType.SERVE;
+
+        String[] layout = {
+                "XXXXXAAIAAXXXX",
+                "C..XXA...AX..A",
+                "I..XXRV..RX..P",
+                "C............S",
+                "I............S",
+                "C..XXR..VRX..A",
+                "I..AXA...AX..A",
+                "AWWAXA...AX..A",
+                "XXXXXAAIAAX..T",
+                "XXXXXXXXXXXXXX"
+        };
+
+        for (int y = 0; y < layout.length; y++) {
+            for (int x = 0; x < layout[y].length(); x++) {
+                char c = layout[y].charAt(x);
+                Tile tile = grid[x][y];
+
+                switch (c) {
+                    case 'C': tile.type = TileType.CUT; break;
+                    case 'R': tile.type = TileType.COOK; break;
+                    case 'A': tile.type = TileType.ASSEMBLE; break;
+                    case 'S': tile.type = TileType.SERVE; break;
+                    case 'W': tile.type = TileType.WASH; break;
+                    case 'I': tile.type = TileType.INGREDIENT; break;
+                    case 'P': tile.type = TileType.PLATE; break;
+                    case 'T': tile.type = TileType.TRASH; break;
+                    case 'X': tile.type = TileType.WALL; break;
+                    case 'V': tile.type = TileType.SPAWN; break;
+                    default:  tile.type = TileType.FLOOR;
+                }
+            }
+        }
     }
 
     private void setupChefs() {
-        Chef c1 = new Chef("Chef1", 6, 6);
-        Chef c2 = new Chef("Chef2", 7, 6);
+        Chef c1 = new Chef("Chef1", 6, 2);
+        Chef c2 = new Chef("Chef2", 8, 5);
         chefs.add(c1);
         chefs.add(c2);
 
