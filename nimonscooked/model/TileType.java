@@ -1,5 +1,5 @@
 package com.burger.nimonscooked.model;
 
 public enum TileType {
-    FLOOR, WALL, CUT, COOK, INGREDIENT, SERVE
+    FLOOR, WALL, CUT, COOK, INGREDIENT, SERVE, ASSEMBLE, PLATE, TRASH, WASH, SPAWN
 }
