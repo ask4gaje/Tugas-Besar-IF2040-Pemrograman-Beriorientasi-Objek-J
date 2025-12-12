@@ -1,6 +1,7 @@
 package org.example.chef;
 
 import org.example.item.Item;
+import org.example.GameManager;
 import org.example.item.KitchenUtensil;
 import org.example.item.Dish;
 import org.example.item.Ingredient;
@@ -46,6 +47,16 @@ import org.slf4j.LoggerFactory;
 
         int targetX = position.getX() + dir.dx;
         int targetY = position.getY() + dir.dy;
+
+        for (Chef otherChef : GameManager.getInstance().getChefs()) { // Get list of all chefs
+            if (otherChef != this &&
+                    otherChef.getPosition().getX() == targetX &&
+                    otherChef.getPosition().getY() == targetY) {
+
+                LOGGER.debug(name + " blocked by " + otherChef.getName() + " at (" + targetX + ", " + targetY + ").");
+                return; // Movement blocked
+            }
+        }
 
         Tile targetTile = map.getTile(targetX, targetY);
 
@@ -143,7 +154,7 @@ import org.slf4j.LoggerFactory;
     }
 
     public Position getPosition() { return position; }
-    public Direction getDirection() { return direction; }
+        public Direction getDirection() { return direction; }
     public boolean isActive() { return isActive; }
     public void setActive(boolean active) { this.isActive = active; }
     public ChefActionState getCurrentAction() { return currentAction; }
