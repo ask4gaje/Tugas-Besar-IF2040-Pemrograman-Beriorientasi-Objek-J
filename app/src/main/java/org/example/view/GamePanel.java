@@ -10,6 +10,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.scene.control.ListView;
+import javafx.scene.image.Image;
 
 import org.example.GameManager;
 import org.example.map.GameMap;
@@ -19,15 +21,25 @@ import org.example.map.WalkableTile;
 import org.example.map.station.*;
 import org.example.chef.Chef;
 import org.example.chef.Direction;
+import org.example.model.Order;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class GamePanel extends BorderPane {
 
     private final Canvas canvas;
     private final GameManager manager;
     private final VBox hudBox;
+    private final ListView<Order> orderList;
 
-    public static final int TILE = 48;
+    public static final int TILE = 64;
     private final AnimationTimer loop;
+
+    private final Map<String, Image> tileImages = new HashMap<>();
+    private final Map<String, Image> itemImages = new HashMap<>();
+    private final Map<Direction, Image> chef1Images = new HashMap<>();
+    private final Map<Direction, Image> chef2Images = new HashMap<>();
 
     public GamePanel() {
         this.manager = GameManager.getInstance();
@@ -35,27 +47,35 @@ public class GamePanel extends BorderPane {
         int width = 14 * TILE;
         int height = 10 * TILE;
         canvas = new Canvas(width, height);
+        this.setCenter(canvas);
 
         hudBox = new VBox(10);
-        hudBox.setPadding(new Insets(8));
-        hudBox.setStyle("-fx-background-color: #ddd;");
+        hudBox.setPadding(new Insets(10));
+        hudBox.setStyle("-fx-background-color: #6dd4d2ff;");
+        hudBox.setPrefWidth(300);
         
-        Label title = new Label("HUD");
-        title.setFont(Font.font(16));
+        Label title = new Label("Nimonscooked");
+        title.setFont(Font.font("Arial", 20));
 
         Label timeLabel = new Label();
-        timeLabel.textProperty().bind(Bindings.createStringBinding(() -> "Time: " + manager.timeProperty().get() + "s", manager.timeProperty()));
+        timeLabel.textProperty().bind(Bindings.concat("Time: ", manager.timeProperty(), "s"));
+        timeLabel.setFont(Font.font(16));
         
         Label scoreLabel = new Label();
-        scoreLabel.textProperty().bind(Bindings.createStringBinding(() -> "Score: " + manager.scoreProperty().get(), manager.scoreProperty()));
+        scoreLabel.textProperty().bind(Bindings.concat("Score: ", manager.scoreProperty()));
+        scoreLabel.setFont(Font.font(16));
         
         Label active = new Label();
         active.textProperty().bind(manager.activeChefNameProperty().concat(" (active)"));
+        active.setTextFill(Color.BLUE);
 
-        hudBox.getChildren().addAll(title, timeLabel, scoreLabel, active);
+        orderList = new ListView<>(manager.getOrders());
+        orderList.setPrefHeight(300);
 
-        this.setCenter(canvas);
+        hudBox.getChildren().addAll(title, timeLabel, scoreLabel, active, new Label("Orders:"), orderList);
+
         this.setRight(hudBox);
+        loadImages();
 
         loop = new AnimationTimer() {
             @Override
@@ -63,6 +83,70 @@ public class GamePanel extends BorderPane {
         };
         loop.start();
     }
+
+    private void loadImages() {
+        try {
+            tileImages.put("FLOOR", new Image(getClass().getResourceAsStream("/asset/tile/tile_FLOOR.png")));
+            tileImages.put("WALL", new Image(getClass().getResourceAsStream("/asset/tile/tile_WALL.png")));
+            tileImages.put("CUT", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_CUTTING.png")));
+            tileImages.put("COOK", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_COOKING.png")));
+            tileImages.put("INGREDIENT", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_INGREDIENT.png")));
+            tileImages.put("SERVE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_SERVING.png")));
+            tileImages.put("WASH", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_WASHING.png")));
+            tileImages.put("ASSEMBLE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_ASSEMBLY.png")));
+            tileImages.put("PLATE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_PLATE.png")));
+            tileImages.put("TRASH", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_TRASH.png")));
+            
+            
+            chef1Images.put(Direction.UP, new Image(getClass().getResourceAsStream("/asset/chef/chef1_UP.png")));
+            chef1Images.put(Direction.DOWN, new Image(getClass().getResourceAsStream("/asset/chef/chef1_DOWN.png")));
+            chef1Images.put(Direction.LEFT, new Image(getClass().getResourceAsStream("/asset/chef/chef1_LEFT.png")));
+            chef1Images.put(Direction.RIGHT, new Image(getClass().getResourceAsStream("/asset/chef/chef1_RIGHT.png")));
+
+            chef2Images.put(Direction.UP, new Image(getClass().getResourceAsStream("/asset/chef/chef2_UP.png")));
+            chef2Images.put(Direction.DOWN, new Image(getClass().getResourceAsStream("/asset/chef/chef2_DOWN.png")));
+            chef2Images.put(Direction.LEFT, new Image(getClass().getResourceAsStream("/asset/chef/chef2_LEFT.png")));
+            chef2Images.put(Direction.RIGHT, new Image(getClass().getResourceAsStream("/asset/chef/chef2_RIGHT.png")));
+
+            itemImages.put("Roti", new Image(getClass().getResourceAsStream("/asset/item/ingredient/roti_RAW.png")));
+            
+            itemImages.put("Daging Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/daging_RAW.png")));
+            itemImages.put("Daging Chopped", new Image(getClass().getResourceAsStream("/asset/item/ingredient/daging_CHOPPED.png")));
+            itemImages.put("Daging Cooking", new Image(getClass().getResourceAsStream("/asset/item/ingredient/daging_COOKING.png")));
+            itemImages.put("Daging Cooked", new Image(getClass().getResourceAsStream("/asset/item/ingredient/daging_COOKED.png")));
+            itemImages.put("Daging Burned", new Image(getClass().getResourceAsStream("/asset/item/ingredient/daging_BURNED.png")));
+
+            itemImages.put("Keju Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/keju_RAW.png")));
+            itemImages.put("Keju", new Image(getClass().getResourceAsStream("/asset/item/ingredient/keju_CHOPPED.png")));
+
+            itemImages.put("Lettuce Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/lettuce_RAW.png")));
+            itemImages.put("Lettuce", new Image(getClass().getResourceAsStream("/asset/item/ingredient/lettuce_CHOPPED.png")));
+
+            itemImages.put("Tomat Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/tomat_RAW.png")));
+            itemImages.put("Tomat", new Image(getClass().getResourceAsStream("/asset/item/ingredient/tomat_CHOPPED.png")));
+
+
+            itemImages.put("Classic Burger", new Image(getClass().getResourceAsStream("/asset/item/menu/classicburger.png")));
+            itemImages.put("CheeseBurger", new Image(getClass().getResourceAsStream("/asset/item/menu/cheeseburger.png")));
+            itemImages.put("BLT Burger", new Image(getClass().getResourceAsStream("/asset/item/menu/bltburger.png")));
+            itemImages.put("Deluxe Burger", new Image(getClass().getResourceAsStream("/asset/item/menu/deluxeburger.png")));
+
+            itemImages.put("Classic Burger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_classicburger.png")));
+            itemImages.put("CheeseBurger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_cheeseburger.png")));
+            itemImages.put("BLT Burger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_bltburger.png")));
+            itemImages.put("Deluxe Burger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_deluxeburger.png")));
+
+            itemImages.put("Plate", new Image(getClass().getResourceAsStream("/asset/item/utensil/plate.png")));
+            itemImages.put("Frying Pan", new Image(getClass().getResourceAsStream("/asset/item/utensil/fryingpan.png")));
+
+            
+        } catch (Exception e) {
+            System.err.println("Warning: Beberapa gambar gagal dimuat. Menggunakan fallback warna.");
+        }
+    }
+
+    public Canvas getCanvas(){ return canvas; }
+    public VBox getHUD(){ return hudBox; }
 
     private void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
@@ -72,6 +156,7 @@ public class GamePanel extends BorderPane {
         drawGrid(g);
         drawItems(g);
         drawChefs(g);
+        drawProgressBars(g);
     }
 
     private void drawGrid(GraphicsContext g) {
@@ -81,27 +166,51 @@ public class GamePanel extends BorderPane {
         for (int x = 0; x < 14; x++) {
             for (int y = 0; y < 10; y++) {
                 Tile t = map.getTile(x, y);
-                double sx = x * TILE, sy = y * TILE;
+                double sx = x * TILE;
+                double sy = y * TILE;
+
+                Image img = null;
+                Color fallbackColor = Color.MAGENTA;
 
                 if (t instanceof WallTile) {
-                    g.setFill(Color.web("#444"));
+                    img = tileImages.get("WALL"); 
+                    fallbackColor = Color.DARKGRAY;
                 } else if (t instanceof WalkableTile) {
-                    g.setFill(Color.web("#b8d8a7"));
+                    img = tileImages.get("FLOOR"); 
+                    fallbackColor = Color.LIGHTGRAY;
                 } else if (t instanceof CuttingStation) {
-                    g.setFill(Color.web("#f2c57c"));
+                    img = tileImages.get("CUT"); 
+                    fallbackColor = Color.ORANGE;
                 } else if (t instanceof CookingStation) {
-                    g.setFill(Color.web("#f27c7c"));
+                    img = tileImages.get("COOK"); 
+                    fallbackColor = Color.RED;
                 } else if (t instanceof IngredientStorage) {
-                    g.setFill(Color.web("#c2e0ff"));
+                    img = tileImages.get("INGREDIENT"); 
+                    fallbackColor = Color.CYAN;
                 } else if (t instanceof ServingCounter) {
-                    g.setFill(Color.web("#ffd88a"));
+                    img = tileImages.get("SERVE"); 
+                    fallbackColor = Color.GOLD;
                 } else if (t instanceof WashingStation) {
-                    g.setFill(Color.CYAN);
-                } else {
-                    g.setFill(Color.SADDLEBROWN);
+                    img = tileImages.get("WASH"); 
+                    fallbackColor = Color.SKYBLUE;
+                }  else if (t instanceof PlateStorage) { 
+                    img = tileImages.get("PLATE");
+                    fallbackColor = Color.WHITE;
+                } else if (t instanceof TrashStation) { 
+                    img = tileImages.get("TRASH");
+                    fallbackColor = Color.BLACK;
+                } else if (t instanceof AssemblyStation) { 
+                    img = tileImages.get("ASSEMBLE");
+                    fallbackColor = Color.LIGHTGREEN;
                 }
 
-                g.fillRect(sx, sy, TILE, TILE);
+                if (img != null) {
+                    g.drawImage(img, sx, sy, TILE, TILE);
+                } else {
+                    g.setFill(fallbackColor);
+                    g.fillRect(sx, sy, TILE, TILE);
+                }
+
                 g.setStroke(Color.color(0, 0, 0, 0.15));
                 g.strokeRect(sx, sy, TILE, TILE);
             }
@@ -116,9 +225,16 @@ public class GamePanel extends BorderPane {
             for (int y = 0; y < 10; y++) {
                 Tile t = map.getTile(x, y);
                 if (t.getItemOnTile() != null) {
+                    String itemName = t.getItemOnTile().getName();
+                    Image img = itemImages.get(itemName);
                     double sx = x * TILE, sy = y * TILE;
-                    g.setFill(Color.SADDLEBROWN);
-                    g.fillOval(sx + 10, sy + 10, TILE - 20, TILE - 20);
+
+                    if (img != null) {
+                        g.drawImage(img, sx + 5, sy + 5, TILE - 10, TILE - 10);
+                    } else {
+                        g.setFill(Color.SADDLEBROWN);
+                        g.fillOval(sx + 10, sy + 10, TILE - 20, TILE - 20);
+                    }
                 }
             }
         }
@@ -131,24 +247,69 @@ public class GamePanel extends BorderPane {
             double sx = c.getPosition().getX() * TILE;
             double sy = c.getPosition().getY() * TILE;
 
-            g.setFill(c == manager.getActiveChef() ? Color.LIGHTGREEN : Color.LIGHTBLUE);
-            g.fillRoundRect(sx + 6, sy + 6, TILE - 12, TILE - 12, 8, 8);
-            
-            g.setFill(Color.BLACK);
-            
-            Direction facing = c.getDirection();
-            if (facing != null) {
-                switch (facing) {
-                    case UP -> g.fillOval(sx + TILE / 2 - 4, sy + 10, 8, 8);
-                    case DOWN -> g.fillOval(sx + TILE / 2 - 4, sy + TILE - 18, 8, 8);
-                    case LEFT -> g.fillOval(sx + 10, sy + TILE / 2 - 4, 8, 8);
-                    case RIGHT -> g.fillOval(sx + TILE - 18, sy + TILE / 2 - 4, 8, 8);
-                }
+            Map<Direction, Image> currentChefImages;
+            if (c.getName().contains("Chef A") || c.getName().contains("C1")) {
+                currentChefImages = chef1Images;
+            } else {
+                currentChefImages = chef2Images;
+            }
+
+            Image img = currentChefImages.get(c.getDirection());
+
+            if (img != null) {
+                g.drawImage(img, sx, sy, TILE, TILE);
+            } else {
+                g.setFill(c == manager.getActiveChef() ? Color.LIMEGREEN : Color.BLUE);
+                g.fillRoundRect(sx + 6, sy + 6, TILE - 12, TILE - 12, 8, 8);
+            }
+
+            if (c == manager.getActiveChef()) {
+                g.setStroke(Color.WHITE);
+                g.setLineWidth(2);
+                g.strokeOval(sx, sy, TILE, TILE);
+                g.setLineWidth(1);
             }
 
             if (c.getInventory() != null) {
-                g.setFill(Color.WHITESMOKE);
-                g.fillRect(sx + 10, sy + TILE - 16, TILE - 20, 6);
+                String heldItemName = c.getInventory().getName();
+                
+                Image heldImg = itemImages.get(heldItemName);
+                
+                double itemSize = TILE / 2.0;
+                double itemX = sx + (TILE / 4.0); 
+                double itemY = sy + (TILE / 4.0); 
+
+                if (heldImg != null) {
+                    g.drawImage(heldImg, itemX, itemY, itemSize, itemSize);
+                } else {
+                    g.setFill(Color.WHITE);
+                    g.fillOval(itemX, itemY, itemSize, itemSize);
+                    g.setStroke(Color.BLACK);
+                    g.strokeOval(itemX, itemY, itemSize, itemSize);
+                }
+            }
+        }
+    }
+
+    private void drawProgressBars(GraphicsContext g) {
+        if (manager.getChefs() == null) return;
+
+        for (Chef c : manager.getChefs()) {
+            Double prog = manager.getProgress(c.getName()).get();
+            
+            if (prog > 0 && prog < 1.0) {
+                double x = c.getPosition().getX() * TILE;
+                double y = c.getPosition().getY() * TILE - 10;
+                double width = TILE - 8;
+
+                g.setFill(Color.gray(0.3));
+                g.fillRect(x + 4, y, width, 6);
+
+                g.setFill(Color.LIME);
+                g.fillRect(x + 4, y, width * prog, 6);
+
+                g.setStroke(Color.BLACK);
+                g.strokeRect(x + 4, y, width, 6);
             }
         }
     }
