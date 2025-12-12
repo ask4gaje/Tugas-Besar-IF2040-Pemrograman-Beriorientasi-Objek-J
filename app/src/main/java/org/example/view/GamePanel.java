@@ -22,6 +22,7 @@ import org.example.map.station.*;
 import org.example.chef.Chef;
 import org.example.chef.Direction;
 import org.example.model.Order;
+import org.example.item.Item;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -145,6 +146,28 @@ public class GamePanel extends BorderPane {
         }
     }
 
+    private String getImageKey(Item item) {
+        if (item == null) return null;
+
+        if (item instanceof org.example.item.Ingredient) {
+            org.example.item.Ingredient ing = (org.example.item.Ingredient) item;
+            
+            String typeLabel = ing.getType().label; 
+            
+            if (typeLabel.equalsIgnoreCase("Roti")) {
+                return "Roti";
+            }
+
+            String state = ing.getState().toString(); 
+        
+            String stateFormatted = state.charAt(0) + state.substring(1).toLowerCase();
+            
+            return typeLabel + " " + stateFormatted;
+        }
+
+        return item.getName();
+    }
+
     public Canvas getCanvas(){ return canvas; }
     public VBox getHUD(){ return hudBox; }
 
@@ -225,8 +248,8 @@ public class GamePanel extends BorderPane {
             for (int y = 0; y < 10; y++) {
                 Tile t = map.getTile(x, y);
                 if (t.getItemOnTile() != null) {
-                    String itemName = t.getItemOnTile().getName();
-                    Image img = itemImages.get(itemName);
+                    String imageKey = getImageKey(t.getItemOnTile());
+                    Image img = itemImages.get(imageKey);
                     double sx = x * TILE, sy = y * TILE;
 
                     if (img != null) {
@@ -271,9 +294,8 @@ public class GamePanel extends BorderPane {
             }
 
             if (c.getInventory() != null) {
-                String heldItemName = c.getInventory().getName();
-                
-                Image heldImg = itemImages.get(heldItemName);
+                String heldItemKey = getImageKey(c.getInventory());
+                Image heldImg = itemImages.get(heldItemKey);
                 
                 double itemSize = TILE / 2.0;
                 double itemX = sx + (TILE / 4.0); 

@@ -43,7 +43,7 @@ public class GameManager {
     private ScheduledExecutorService timerScheduler;
     private IntegerProperty timeRemaining = new SimpleIntegerProperty(180);
     private ObservableList<Order> orders = FXCollections.observableArrayList();
-    private final int MAX_GAME_DURATION = 180; // 3 menit (Contoh)
+    private final int MAX_GAME_DURATION = 18000; // 3 menit (Contoh)
     private final int MAX_FAILED_ORDERS = 5;
 
     private GameManager() {
@@ -158,6 +158,14 @@ public class GameManager {
         
         if (active != null && currentState == GameState.PLAYING) {
             active.interact(currentMap);
+        }
+    }
+
+    public void grabItem() {
+        Chef active = getActiveChef();
+        
+        if (active != null && currentState == GameState.PLAYING) {
+            active.grabItem(currentMap);
         }
     }
 

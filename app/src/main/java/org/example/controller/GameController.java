@@ -29,7 +29,7 @@ public class GameController {
                 case S -> manager.moveChef(Direction.DOWN);
                 case D -> manager.moveChef(Direction.RIGHT);
                 case V -> manager.interact();
-                case C -> System.out.println("Pick/Drop (Belum implementasi)");
+                case C -> manager.grabItem();
                 case B -> manager.switchChef();
             }
         });
