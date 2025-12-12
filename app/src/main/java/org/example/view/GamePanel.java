@@ -91,13 +91,17 @@ public class GamePanel extends BorderPane {
             tileImages.put("WALL", new Image(getClass().getResourceAsStream("/asset/tile/tile_WALL.png")));
             tileImages.put("CUT", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_CUTTING.png")));
             tileImages.put("COOK", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_COOKING.png")));
-            tileImages.put("INGREDIENT", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_INGREDIENT.png")));
             tileImages.put("SERVE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_SERVING.png")));
             tileImages.put("WASH", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_WASHING.png")));
             tileImages.put("ASSEMBLE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_ASSEMBLY.png")));
             tileImages.put("PLATE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_PLATE.png")));
             tileImages.put("TRASH", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_TRASH.png")));
-            
+            tileImages.put("BUN STORAGE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_Roti_storage.png")));
+            tileImages.put("MEAT STORAGE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_Daging_storage.png")));
+            tileImages.put("CHEESE STORAGE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_Keju_storage.png")));
+            tileImages.put("LETTUCE STORAGE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_Lettuce_storage.png")));
+            tileImages.put("TOMATO STORAGE", new Image(getClass().getResourceAsStream("/asset/tile/station/tile_Tomat_storage.png")));
+
             
             chef1Images.put(Direction.UP, new Image(getClass().getResourceAsStream("/asset/chef/chef1_UP.png")));
             chef1Images.put(Direction.DOWN, new Image(getClass().getResourceAsStream("/asset/chef/chef1_DOWN.png")));
@@ -335,4 +339,5 @@ public class GamePanel extends BorderPane {
             }
         }
     }
+
 }
