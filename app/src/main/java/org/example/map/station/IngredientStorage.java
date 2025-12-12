@@ -16,7 +16,7 @@ public class IngredientStorage extends AbstractStation {
         this.type = type;
     }
     
-    public IngredientType getType() {
+    public IngredientType getStorageType() {
         return type;
     }
 

@@ -23,7 +23,7 @@ public class WalkableTile implements Tile {
     }
     
     @Override
-    public Item getItemOnTile() { return itemOnTile; }
+    public Item getItemOnTile() { return this.itemOnTile; }
 
     @Override
     public void setItemOnTile(Item item) { this.itemOnTile = item; }

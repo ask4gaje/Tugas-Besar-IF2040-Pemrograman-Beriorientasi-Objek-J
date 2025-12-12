@@ -5,10 +5,13 @@ import org.example.GameManager;
 import org.example.item.KitchenUtensil;
 import org.example.item.Dish;
 import org.example.item.Ingredient;
+import org.example.item.IngredientType;
 import org.example.map.WalkableTile;
 import org.example.map.GameMap;
 import org.example.map.Tile;
 import org.example.map.station.AbstractStation;
+import org.example.map.station.IngredientStorage;
+
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.application.Platform;
@@ -16,8 +19,8 @@ import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-    public class Chef {
-        private static final Logger LOGGER = LoggerFactory.getLogger(org.example.chef.Chef.class.getName());
+public class Chef {
+    private static final Logger LOGGER = LoggerFactory.getLogger(org.example.chef.Chef.class.getName());
 
     private final String name;
     private Position position;
@@ -72,13 +75,12 @@ import org.slf4j.LoggerFactory;
     public void interact(GameMap map) {
         if (currentAction == ChefActionState.BUSY) return;
     
-        int targetX = position.getX() + direction.dx;
-        int targetY = position.getY() + direction.dy;
+        Tile targetTile = getFrontTile(map);
+        if (targetTile == null) return;
     
         try {
-        Tile targetTile = map.getTile(targetX, targetY);
-        targetTile.interact(this);
-        
+            targetTile.interact(this);
+            
         } catch (Exception e) {
             LOGGER.error("Interaction error: {}", e.getMessage());
         }
@@ -130,7 +132,7 @@ import org.slf4j.LoggerFactory;
                     
                     Platform.runLater(() -> actionProgress.set(progress));
                     
-                    Thread.sleep(100);
+                    Thread.sleep(50);
                 }
                 
                 Platform.runLater(() -> actionProgress.set(0.0));
@@ -147,6 +149,62 @@ import org.slf4j.LoggerFactory;
                 LOGGER.info("{} finished working (IDLE).", name);
             }
         }).start();
+    }
+
+    private Tile getFrontTile(GameMap map) {
+        int targetX = position.getX() + getDx(this.direction);
+        int targetY = position.getY() + getDy(this.direction);
+        try {
+            return map.getTile(targetX, targetY);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private int getDx(Direction dir) {
+        return switch (dir) {
+            case LEFT -> -1;
+            case RIGHT -> 1;
+            default -> 0;
+        };
+    }
+
+    private int getDy(Direction dir) {
+        return switch (dir) {
+            case UP -> -1;
+            case DOWN -> 1;
+            default -> 0;
+        };
+    }
+
+    public void grabItem(GameMap map) {
+        if (currentAction == ChefActionState.BUSY) return; 
+
+        Tile targetTile = getFrontTile(map);
+        if (targetTile == null) return;
+
+        if (this.inventory != null) {
+            if (targetTile.getItemOnTile() == null 
+                && !(targetTile instanceof org.example.map.WallTile)
+                && !(targetTile instanceof IngredientStorage)) {
+                
+                targetTile.setItemOnTile(this.inventory); 
+                this.inventory = null; 
+            }
+        } 
+        
+        else {
+            if (targetTile instanceof IngredientStorage) {
+                IngredientStorage storage = (IngredientStorage) targetTile;
+                IngredientType type = storage.getStorageType();
+                
+                this.inventory = new Ingredient(type);
+            } 
+            else if (targetTile.getItemOnTile() != null) {
+                this.inventory = targetTile.getItemOnTile(); 
+                targetTile.setItemOnTile(null); 
+            }
+        }
     }
 
     public DoubleProperty actionProgressProperty() {
