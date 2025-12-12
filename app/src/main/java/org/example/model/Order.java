@@ -1,6 +1,6 @@
 package org.example.model;
 
-public class Order {
+public class    Order {
     private int id;
     private String recipe;
     private int timeLeft;

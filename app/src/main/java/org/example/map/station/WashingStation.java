@@ -19,18 +19,7 @@ public class WashingStation extends AbstractStation {
 
     @Override
     public void interact(Chef chef) {
-        // 1. Chef taruh piring kotor
-        if (chef.getInventory() instanceof Plate) {
-            Plate p = (Plate) chef.getInventory();
-            if (!p.isClean()) {
-                chef.dropItem();
-                dirtyPlates.add(p);
-                LOGGER.info("{} put dirty plate in sink.", chef.getName());
-                return;
-            }
-        }
-        
-        // 2. Chef cuci piring (Busy State)
+        // 1. Chef cuci piring (Busy State)
         if (chef.getInventory() == null && !dirtyPlates.isEmpty()) {
             // Start Thread Cuci
             LOGGER.info("{} started washing...", chef.getName());
@@ -45,10 +34,23 @@ public class WashingStation extends AbstractStation {
             return;
         }
         
-        // 3. Chef ambil piring bersih
+        // 2. Chef ambil piring bersih
         if (chef.getInventory() == null && !cleanPlates.isEmpty()) {
             chef.setInventory(cleanPlates.poll());
             LOGGER.info("{} took clean plate from sink.", chef.getName());
+        }
+    }
+
+    @Override
+    public void pickUp(Chef chef) {
+        if (chef.getInventory() instanceof Plate) {
+            Plate p = (Plate) chef.getInventory();
+            if (!p.isClean()) {
+                chef.dropItem();
+                dirtyPlates.add(p);
+                LOGGER.info("{} put dirty plate in sink.", chef.getName());
+                return;
+            }
         }
     }
 }

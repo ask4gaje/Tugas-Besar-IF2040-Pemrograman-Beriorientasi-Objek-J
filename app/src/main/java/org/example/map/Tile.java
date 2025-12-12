@@ -10,6 +10,7 @@ public interface Tile {
     Item getItemOnTile(); // Konsep: Item yang diletakkan di lantai/tile
     void setItemOnTile(Item item);
 
-    default void interact(Chef chef) {
-    }
+    default void interact(Chef chef) {}
+
+    default void pickUp(Chef chef) {}
 }

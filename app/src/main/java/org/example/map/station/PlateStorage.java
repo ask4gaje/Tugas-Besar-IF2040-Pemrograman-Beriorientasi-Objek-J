@@ -21,17 +21,13 @@ public class PlateStorage extends AbstractStation {
     }
 
     @Override
-    public void interact(Chef chef) {
-        // Chef ambil piring
+    public void interact(Chef chef) {}
+
+    @Override
+    public void pickUp(Chef chef) {
         if (chef.getInventory() == null && !cleanPlateStack.isEmpty()) {
             chef.setInventory(cleanPlateStack.pop());
             LOGGER.info("{} took a clean plate. Remaining: {}", chef.getName(), cleanPlateStack.size());
         }
-        // (Optional) Chef taruh piring bersih kembali?
-        // Sesuai spec biasanya Plate Storage hanya output, tapi bisa ditambah logic put jika perlu.
-    }
-    
-    public void returnCleanPlate(Item plate) {
-        cleanPlateStack.push(plate);
     }
 }

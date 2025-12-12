@@ -67,7 +67,7 @@ public class CookingStation extends AbstractStation {
 
 
     @Override
-    public void interact(Chef chef) {
+    public void pickUp(Chef chef) {
         if (chef.getCurrentAction() == org.example.chef.ChefActionState.BUSY) {
             LOGGER.info("{} is busy and cannot interact.", chef.getName());
             return;
@@ -141,4 +141,7 @@ public class CookingStation extends AbstractStation {
         
         LOGGER.warn("{} tried to interact, but nothing happened.", chef.getName());
     }
+
+    @Override
+    public void interact(Chef chef) {}
 }

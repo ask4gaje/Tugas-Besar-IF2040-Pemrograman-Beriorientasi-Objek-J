@@ -74,13 +74,27 @@ public class Chef {
 
     public void interact(GameMap map) {
         if (currentAction == ChefActionState.BUSY) return;
-    
+
         Tile targetTile = getFrontTile(map);
         if (targetTile == null) return;
-    
+
         try {
             targetTile.interact(this);
-            
+
+        } catch (Exception e) {
+            LOGGER.error("Interaction error: {}", e.getMessage());
+        }
+    }
+
+    public void grabItem(GameMap map) {
+        if (currentAction == ChefActionState.BUSY) return;
+
+        Tile targetTile = getFrontTile(map);
+        if (targetTile == null) return;
+
+        try {
+            targetTile.pickUp(this);
+
         } catch (Exception e) {
             LOGGER.error("Interaction error: {}", e.getMessage());
         }
@@ -175,36 +189,6 @@ public class Chef {
             case DOWN -> 1;
             default -> 0;
         };
-    }
-
-    public void grabItem(GameMap map) {
-        if (currentAction == ChefActionState.BUSY) return; 
-
-        Tile targetTile = getFrontTile(map);
-        if (targetTile == null) return;
-
-        if (this.inventory != null) {
-            if (targetTile.getItemOnTile() == null 
-                && !(targetTile instanceof org.example.map.WallTile)
-                && !(targetTile instanceof IngredientStorage)) {
-                
-                targetTile.setItemOnTile(this.inventory); 
-                this.inventory = null; 
-            }
-        } 
-        
-        else {
-            if (targetTile instanceof IngredientStorage) {
-                IngredientStorage storage = (IngredientStorage) targetTile;
-                IngredientType type = storage.getStorageType();
-                
-                this.inventory = new Ingredient(type);
-            } 
-            else if (targetTile.getItemOnTile() != null) {
-                this.inventory = targetTile.getItemOnTile(); 
-                targetTile.setItemOnTile(null); 
-            }
-        }
     }
 
     public DoubleProperty actionProgressProperty() {

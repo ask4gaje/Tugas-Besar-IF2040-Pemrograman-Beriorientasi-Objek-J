@@ -21,8 +21,10 @@ public class IngredientStorage extends AbstractStation {
     }
 
     @Override
-    public void interact(Chef chef) {
-        // Chef hanya bisa mengambil jika tangan kosong
+    public void interact(Chef chef) {}
+
+    @Override
+    public void pickUp(Chef chef) {
         if (chef.getInventory() == null) {
             // Spawn ingredient baru menggunakan Factory
             chef.setInventory(IngredientFactory.createIngredient(type));

@@ -14,8 +14,10 @@ public class TrashStation extends AbstractStation {
     }
 
     @Override
-    public void interact(Chef chef) {
-        // Jika chef bawa item, buang itemnya
+    public void interact(Chef chef) {}
+
+    @Override
+    public void pickUp(Chef chef) {
         if (chef.getInventory() != null) {
             Item item = chef.dropItem();
             LOGGER.info("{} threw away {}.", chef.getName(), item.getName());

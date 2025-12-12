@@ -1,9 +1,13 @@
 package org.example.map.station;
 
 import org.example.chef.Chef;
+import org.example.chef.ChefActionState;
 import org.example.chef.Position;
 import org.example.item.Ingredient;
+import org.example.item.IngredientType;
 import org.example.item.Item;
+import org.example.item.Plate;
+import org.example.map.Tile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,5 +46,25 @@ public class CuttingStation extends AbstractStation {
         } else {
             LOGGER.info("Tidak ada bahan di meja untuk dipotong.");
         }
+    }
+
+    @Override
+    public void pickUp(Chef chef) {
+        Item heldItem = chef.getInventory();
+
+        if (itemOnTile != null && heldItem == null) {
+            chef.setInventory(this.itemOnTile);
+            this.itemOnTile = null;
+            LOGGER.info("{} took {} from Cutting Station.", chef.getName(), chef.getInventory().getName());
+            return;
+        }
+
+        else if (itemOnTile == null && heldItem != null) {
+            this.itemOnTile = chef.dropItem();
+            LOGGER.info("{} placed {} on Cutting Station.", chef.getName(), itemOnTile.getName());
+            return;
+        }
+
+        LOGGER.warn("{} tried to pick up, but nothing happened.", chef.getName());
     }
 }

@@ -36,4 +36,7 @@ public abstract class AbstractStation implements Tile {
 
     @Override
     public abstract void interact(Chef chef);
+
+    @Override
+    public abstract void pickUp(Chef chef);
 }

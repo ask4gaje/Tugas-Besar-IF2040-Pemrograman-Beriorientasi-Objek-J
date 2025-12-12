@@ -16,13 +16,16 @@ public class AssemblyStation extends AbstractStation {
     }
 
     @Override
-    public void interact(Chef chef) {
+    public void interact(Chef chef) {};
+
+    @Override
+    public void pickUp(Chef chef) {
         Item heldItem = chef.getInventory();
 
         if (heldItem instanceof Plate plate && itemOnTile instanceof Ingredient ingredient) {
             if (ingredient.canBePlacedOnPlate()) {
                 plate.addDishComponent(ingredient);
-                this.itemOnTile = null; 
+                this.itemOnTile = null;
                 LOGGER.info("{} added {} from station to their plate.", chef.getName(), ingredient.getName());
                 return;
             } else {
@@ -34,7 +37,7 @@ public class AssemblyStation extends AbstractStation {
         if (heldItem instanceof Ingredient ingredient && itemOnTile instanceof Plate plate) {
             if (ingredient.canBePlacedOnPlate()) {
                 plate.addDishComponent(ingredient);
-                chef.dropItem(); 
+                chef.dropItem();
                 LOGGER.info("{} placed {} onto the plate on station.", chef.getName(), ingredient.getName());
                 return;
             } else {

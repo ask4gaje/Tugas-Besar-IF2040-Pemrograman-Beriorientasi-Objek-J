@@ -1,5 +1,6 @@
 package org.example.map;
 
+import org.example.chef.Chef;
 import org.example.chef.Position;
 import org.example.item.Item;
 
@@ -29,4 +30,10 @@ public class WallTile implements Tile {
     public void setItemOnTile(Item item) {
         System.out.println("Tidak bisa menaruh item di tembok!");
     }
+
+    @Override
+    public void interact(Chef chef) {}
+
+    @Override
+    public void pickUp(Chef chef) {}
 }

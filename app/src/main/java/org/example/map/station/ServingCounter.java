@@ -14,15 +14,17 @@ public class ServingCounter extends AbstractStation {
     }
 
     @Override
-    public void interact(Chef chef) {
-        // Chef menyajikan makanan (Drop item ke counter)
+    public void interact(Chef chef) {}
+
+    @Override
+    public void pickUp(Chef chef) {
         if (chef.getInventory() != null) {
             Item servedItem = chef.dropItem();
             LOGGER.info("{} served {}. (Validation Pending)", chef.getName(), servedItem.getName());
-            
+
             // Di sini nanti panggil logic GameManager untuk cek Order & Score
             // int score = GameManager.getInstance().validateOrder(servedItem);
-            
+
             // Item dianggap "terkirim" dan hilang dari dunia game
         }
     }
