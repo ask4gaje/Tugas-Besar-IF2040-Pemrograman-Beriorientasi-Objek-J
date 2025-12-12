@@ -18,7 +18,7 @@ public class GamePanel implements GameModelListener {
     private final VBox hudBox;
     private final ListView<Order> orderList;
 
-    public static final int TILE = 48;
+    public static final int TILE = 64;
     private final AnimationTimer loop;
 
     public GamePanel(GameModel model){
@@ -151,4 +151,5 @@ public class GamePanel implements GameModelListener {
         }
     }
 }
+
 
