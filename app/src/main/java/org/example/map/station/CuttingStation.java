@@ -2,68 +2,72 @@ package org.example.map.station;
 
 import org.example.chef.Chef;
 import org.example.chef.Position;
+import org.example.item.Ingredient;
 import org.example.item.Item;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CuttingStation extends AbstractStation {
-    private static final int MAX_CUTTING_PROGRESS = 3; // Contoh: Perlu 3 kali aksi untuk selesai
-    private int currentCuttingProgress = 0;
-    private boolean isBusy = false;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CuttingStation.class);
+    private static final int CUTTING_TIME_SECONDS = 3;
+
+    // Removed unused internal progress variables and methods,
+    // relying on Chef.performLongAction and Ingredient state.
 
     public CuttingStation(Position position) {
         super(position);
     }
 
-    public boolean isBusy() {
-        return isBusy;
-    }
-
-    public int getCurrentCuttingProgress() {
-        return currentCuttingProgress;
-    }
-
-    public void startCutting(Item item) {
-        if (itemOnTile != null && !isBusy) {
-            // Asumsi itemOnTile adalah item yang akan di-cut
-            this.isBusy = true;
-            this.currentCuttingProgress = 0;
-            // Di sini, Anda mungkin ingin melakukan validasi apakah item bisa di-cut
-            System.out.println("Cutting started on: " + itemOnTile.toString());
-        }
-    }
-
-    public Item performCutAction() {
-        if (isBusy && currentCuttingProgress < MAX_CUTTING_PROGRESS) {
-            currentCuttingProgress++;
-            System.out.println("Cutting progress: " + currentCuttingProgress + "/" + MAX_CUTTING_PROGRESS);
-            if (currentCuttingProgress >= MAX_CUTTING_PROGRESS) {
-                // Selesai di-cut.
-                // Anggota 3 akan menambahkan logika untuk mengganti itemOnTile dengan versi yang sudah di-cut
-                Item finishedItem = itemOnTile; // Placeholder: seharusnya ini adalah item baru (e.g., ChoppedTomato)
-                this.itemOnTile = null; // Item selesai dan siap diambil
-                this.isBusy = false;
-                this.currentCuttingProgress = 0;
-                System.out.println("Cutting finished.");
-                return finishedItem;
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public boolean isWalkable() {
-        return false; // Tetap tidak bisa diinjak
-    }
-
     @Override
     public void interact(Chef chef) {
-        // Taruh item
-        if (itemOnTile == null && chef.getInventory() != null) {
-        this.itemOnTile = chef.dropItem();
+        if (chef.getCurrentAction() == org.example.chef.ChefActionState.BUSY) {
+            LOGGER.info("{} is busy and cannot interact.", chef.getName());
+            return;
         }
-        // Proses item
+
+        // Case 1: Chef has item and station is empty -> Drop item (only if choppable ingredient or any item if not an ingredient)
+        if (itemOnTile == null && chef.getInventory() != null) {
+            Item heldItem = chef.getInventory();
+            if (heldItem instanceof Ingredient ingredient) {
+                if (ingredient.canBeChopped()) {
+                    this.itemOnTile = chef.dropItem();
+                    LOGGER.info("{} placed {} on Cutting Station.", chef.getName(), itemOnTile.getName());
+                } else {
+                    LOGGER.warn("{} cannot be chopped or is already prepared.", heldItem.getName());
+                }
+            } else {
+                // Allow placing non-ingredient items (e.g., a plate) on the station
+                this.itemOnTile = chef.dropItem();
+                LOGGER.info("{} placed {} on Cutting Station.", chef.getName(), itemOnTile.getName());
+            }
+        }
+
+        // Case 2: Chef is empty and station has item -> Pick up or Start Cutting
         else if (itemOnTile != null && chef.getInventory() == null) {
-        // Logic cek ingredient dan start cutting thread...
-        // chef.performLongAction(...)
+            // A. Pick up the item
+            if (itemOnTile instanceof Ingredient ingredient) {
+                // If ingredient is already prepared (chopped) or is a BUN (not choppable), pick up.
+                if (!ingredient.canBeChopped()) {
+                    chef.setInventory(this.itemOnTile);
+                    this.itemOnTile = null;
+                    LOGGER.info("{} took {} from Cutting Station.", chef.getName(), ingredient.getName());
+                    return;
+                }
+            }
+
+            // B. Start Cutting the raw ingredient
+            if (itemOnTile instanceof Ingredient ingredient && ingredient.canBeChopped()) {
+                LOGGER.info("{} started cutting {}.", chef.getName(), ingredient.getName());
+                chef.performLongAction(CUTTING_TIME_SECONDS, () -> {
+                    ingredient.chop();
+                    LOGGER.info("{} finished cutting. Item is now {}.", chef.getName(), ingredient.getName());
+                });
+            } else {
+                // If it's a non-Ingredient item (e.g., Plate) or an un-choppable item, pick up immediately.
+                chef.setInventory(this.itemOnTile);
+                this.itemOnTile = null;
+                LOGGER.info("{} took {} from Cutting Station.", chef.getName(), chef.getInventory().getName());
+            }
+        }
     }
-}
 }
