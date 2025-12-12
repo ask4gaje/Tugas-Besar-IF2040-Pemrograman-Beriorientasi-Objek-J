@@ -1,6 +1,7 @@
-
 package org.example;
 
+import javafx.application.Platform;
+import javafx.beans.property.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -9,8 +10,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.example.config.MapLayouts;
 import org.example.map.GameMap;
+import org.example.map.Tile;
 import org.example.chef.Position;
 import org.example.chef.Chef;
+import org.example.chef.Direction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,32 +21,28 @@ import org.slf4j.LoggerFactory;
 public class GameManager {
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
     
-    // 1. Singleton Instance
     private static GameManager instance; 
 
-    // Atribut State
     private GameState currentState;
-    private int score;
     private int failedOrderCount;
     private GameMap currentMap;
     private Position chefSpawnA;
     private Position chefSpawnB;
     private List<Chef> chefs;
+    private IntegerProperty score = new SimpleIntegerProperty(0);
+    private IntegerProperty activeChefIndex = new SimpleIntegerProperty(0); 
+    private StringProperty activeChefName = new SimpleStringProperty("");
 
-    // Atribut Concurrency dan Stage Over
     private ScheduledExecutorService timerScheduler;
-    private int timeRemainingSeconds;
+    private IntegerProperty timeRemaining = new SimpleIntegerProperty(180);
     private final int MAX_GAME_DURATION = 180; // 3 menit (Contoh)
     private final int MAX_FAILED_ORDERS = 5;
 
-    // 2. Konstruktor Private
     private GameManager() {
         this.currentState = GameState.MAIN_MENU;
-        this.score = 0;
         logger.info("GameManager (Singleton) diinisialisasi.");
     }
 
-    // 3. Method publik statis untuk mendapatkan instance
     public static GameManager getInstance() {
         if (instance == null) {
             instance = new GameManager();
@@ -53,29 +52,18 @@ public class GameManager {
 
     public void initialize() {
         logger.info("Memuat Stage: Burger Map...");
-        
-        // Panggil method pemuatan stage di sini
         loadStage(MapLayouts.BURGER_MAP_LAYOUT); 
         
         this.currentState = GameState.STAGE_SELECT;
-        logger.info("Current State diubah menjadi: {}", currentState);
+
+        startGame();
     }
     
-    // --- Method loadStage() ---
     public void loadStage(String[] layout) {
-        // 1. Buat instance GameMap
         this.currentMap = new GameMap();
-        
-        // 2. Parsing layout peta
         this.currentMap.loadMap(layout);
-        
-        // 3. Simpan posisi spawn chef (disediakan untuk Anggota 2/3)
         this.chefSpawnA = this.currentMap.getChefSpawnA();
         this.chefSpawnB = this.currentMap.getChefSpawnB();
-
-        // [Konsep Generics Wajib]: Anda bisa menambahkan method utilitas Generics
-        // public <T extends Tile> T getStation(Class<T> stationClass) { ... }
-        
         logger.info("Stage dimuat. Posisi awal Chef A: ({},{}), Chef B: ({},{})",
                     chefSpawnA.getX(), chefSpawnA.getY(), chefSpawnB.getX(), chefSpawnB.getY());
     }
@@ -84,45 +72,71 @@ public class GameManager {
         if (currentState == GameState.PLAYING) return;
         
         chefs = new ArrayList<>();
-        chefs.add(new Chef("C1", "Chef A", chefSpawnA));
-        chefs.add(new Chef("C2", "Chef B", chefSpawnB));
+        chefs.add(new Chef("C1", "Chef A", chefSpawnA != null ? chefSpawnA : new Position(1,1)));
+        chefs.add(new Chef("C2", "Chef B", chefSpawnB != null ? chefSpawnB : new Position(2,1)));
         chefs.get(0).setActive(true);
 
+        this.activeChefIndex.set(0); 
+        chefs.get(0).setActive(true);
+        activeChefName.set(chefs.get(0).getName());
+
         this.currentState = GameState.PLAYING;
-        this.failedOrderCount = 0; // Reset
-        this.score = 0;          // Reset
+        this.failedOrderCount = 0; 
+        this.score.set(0);
         logger.info("Permainan Dimulai. Waktu: {} detik", MAX_GAME_DURATION);
         startTimer(MAX_GAME_DURATION);
     }
 
     private void startTimer(int duration) {
-        this.timeRemainingSeconds = duration;
-        // Membuat single thread scheduler dan memberi nama thread
+        this.timeRemaining.set(duration);
         this.timerScheduler = Executors.newSingleThreadScheduledExecutor(
             r -> new Thread(r, "GameTimerThread")
         );
 
-        // Menjalankan tugas setiap 1 detik
         timerScheduler.scheduleAtFixedRate(() -> {
             try {
                 if (currentState != GameState.PLAYING) {
                     timerScheduler.shutdown();
-                    logger.debug("Timer dimatikan.");
                     return;
                 }
 
-                timeRemainingSeconds--;
-                // Logging terstruktur dengan nama thread (Wajib)
-                logger.debug("Waktu tersisa: {} detik", timeRemainingSeconds); 
-
-                if (timeRemainingSeconds <= 0) {
-                    endStage(EndCondition.TIMES_UP);
-                    timerScheduler.shutdown();
-                }
+                Platform.runLater(() -> {
+                    // Pakai .get() untuk baca, .set() untuk tulis
+                    int current = timeRemaining.get();
+                    if (current > 0) {
+                        timeRemaining.set(current - 1);
+                    } else {
+                        endStage(EndCondition.TIMES_UP);
+                        timerScheduler.shutdown();
+                    }
+                });
             } catch (Exception e) {
                 logger.error("Error pada GameTimerThread: {}", e.getMessage());
             }
         }, 0, 1, TimeUnit.SECONDS); 
+    }
+
+    public void moveChef(Direction dir) {
+        Chef active = getActiveChef();
+        if (active != null && currentState == GameState.PLAYING) {
+            active.move(dir, currentMap);
+        }
+    }
+
+    public void switchChef() {
+        if (chefs == null || chefs.isEmpty()) return;
+
+        getActiveChef().setActive(false);
+
+        int currentIndex = activeChefIndex.get();
+        int nextIndex = (currentIndex + 1) % chefs.size();
+        activeChefIndex.set(nextIndex);
+
+        Chef newChef = getActiveChef();
+        newChef.setActive(true);
+        activeChefName.set(newChef.getName());
+        
+        logger.info("Switch Chef ke: {}", newChef.getName());
     }
 
     public void increaseFailedOrderCount() {
@@ -137,7 +151,7 @@ public class GameManager {
     }
 
     public void updateScore(int delta) {
-        this.score += delta;
+        this.score.set(this.score.get() + delta);
         logger.info("Skor diperbarui: {} (Delta: {})", score, delta);
     }
 
@@ -146,7 +160,6 @@ public class GameManager {
 
         this.currentState = GameState.GAME_OVER;
 
-        // Menghentikan Scheduler
         if (timerScheduler != null && !timerScheduler.isShutdown()) {
             timerScheduler.shutdownNow();
             logger.info("Scheduler Timer dihentikan.");
@@ -156,12 +169,10 @@ public class GameManager {
         logger.info("Kondisi: {}", condition);
         logger.info("SKOR AKHIR: {}", score);
 
-        // Logika sederhana Pass/Fail (Boleh disempurnakan nanti)
-        boolean isPassed = condition == EndCondition.TIMES_UP && score >= 500; // Misal target skor 500
+        boolean isPassed = condition == EndCondition.TIMES_UP && score.get() >= 500; 
         logger.info("STATUS KELULUSAN: {}", isPassed ? "PASS" : "FAIL");
     }
     
-    // --- Getter Baru untuk Anggota Lain ---
     public GameMap getCurrentMap() {
         return currentMap;
     }
@@ -175,8 +186,8 @@ public class GameManager {
     }
 
     public int getScore() {
-    return score;
-        }
+        return score.get();
+    }
 
     public int getFailedOrderCount() {
         return failedOrderCount;
@@ -185,5 +196,17 @@ public class GameManager {
     public List<Chef> getChefs() {
         return chefs;
     }
-    // ... method lain
+    public int getActiveChefIndex() {
+        return activeChefIndex.get();
+    }
+
+    public IntegerProperty timeProperty() { return timeRemaining; }
+    public IntegerProperty scoreProperty() { return score; }
+    public StringProperty activeChefNameProperty() { return activeChefName; }
+
+    public Chef getActiveChef() { 
+        if (chefs == null || chefs.isEmpty()) return null;
+        return chefs.get(activeChefIndex.get()); 
+    }
+
 }

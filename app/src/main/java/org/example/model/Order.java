@@ -1,4 +1,4 @@
-package com.burger.nimonscooked.model;
+package org.example.model;
 
 public class Order {
     private int id;
