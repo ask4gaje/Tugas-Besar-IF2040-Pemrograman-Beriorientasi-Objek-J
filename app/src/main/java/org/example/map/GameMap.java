@@ -5,17 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.example.chef.Position;
 import org.example.config.MapLayouts;
 import org.example.item.IngredientType;
-import org.example.map.station.*; // Import semua kelas Station
+import org.example.map.station.*; 
 
-// Menggunakan Generics (Wajib OOP)
-// Meskipun tidak wajib di GameMap, ini adalah contoh penggunaan Generics.
+
 public class GameMap {
     private static final Logger logger = LoggerFactory.getLogger(GameMap.class);
     
     private final int width = MapLayouts.MAP_WIDTH;
     private final int height = MapLayouts.MAP_HEIGHT;
     
-    // Array 2D untuk menyimpan semua Tile (Polymorphism)
     private Tile[][] grid = new Tile[height][width]; 
     
     // Atribut untuk posisi awal Chef (Disediakan untuk Anggota 2)
