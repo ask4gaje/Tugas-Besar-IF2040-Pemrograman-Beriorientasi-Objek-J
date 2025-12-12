@@ -2,90 +2,143 @@ package org.example.map.station;
 
 import org.example.chef.Chef;
 import org.example.chef.Position;
+import org.example.item.CookingDevice;
+import org.example.item.Ingredient;
 import org.example.item.Item;
+import org.example.item.KitchenUtensil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class CookingStation extends AbstractStation {
-    // Cooking Station dapat menampung Kitchen Utensils (Frying Pan/Boiling Pot)
-    // Utensil yang sedang digunakan oleh station
-    private Item currentUtensil; 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CookingStation.class);
     
-    // Logika thread memasak otomatis akan diwakilkan oleh variabel progress
-    private int cookingProgress = 0;
-    private boolean isCooking = false;
-    private static final int MAX_COOKING_TIME = 10; // Contoh waktu masak
+    // Time constants for cooking logic
+    private static final int COOKING_TIME_SECONDS = 12; 
+    private static final int BURN_DELAY_SECONDS = 12; // Time to wait after COOKED before BURNING
     
+    // Status flag to manage the burn timer state across threads.
+    private volatile boolean isBurnTimerActive = false; 
+
     public CookingStation(Position position) {
         super(position);
     }
-
-    public Item getCurrentUtensil() {
-        return currentUtensil;
-    }
     
-    // Metode untuk menaruh Utensil di station
-    @Override
-    public void setItemOnTile(Item item) {
-        // Asumsi item yang diletakkan adalah Utensil (FryingPan/BoilingPot)
-        // Jika itemOnTile adalah Utensil, maka ini menjadi currentUtensil
-        if (currentUtensil == null && item != null) {
-            // Anggota 3 harus memvalidasi jenis Item
-            this.currentUtensil = item;
-            System.out.println("Utensil placed: " + item.toString());
-        } else {
-            // Logika lain, misalnya menaruh item di dalam utensil
-            super.setItemOnTile(item); 
+    /**
+     * Starts a non-blocking thread to monitor the cooked ingredient for overcooking/burning.
+     */
+    private void startBurnTimer(Ingredient ingredient) {
+        // If the ingredient is cooked, activate the burn timer logic.
+        if (ingredient.getState() == org.example.item.IngredientState.COOKED) {
+            this.isBurnTimerActive = true;
+            LOGGER.info("Burn timer started for {} ({}s delay).", ingredient.getName(), BURN_DELAY_SECONDS);
+
+            new Thread(() -> {
+                try {
+                    // Wait for the burning delay
+                    Thread.sleep(BURN_DELAY_SECONDS * 1000L);
+
+                    // Check if the item is still on the station AND the timer is still active
+                    if (isBurnTimerActive && itemOnTile instanceof KitchenUtensil utensil && !utensil.getContents().isEmpty()) {
+                        Ingredient itemInUtensil = (Ingredient) utensil.getContents().get(0);
+                        
+                        // Check if it's the same item and it hasn't been burnt yet
+                        if (itemInUtensil == ingredient && itemInUtensil.getState() == org.example.item.IngredientState.COOKED) {
+                            itemInUtensil.burn();
+                            LOGGER.warn("!!! {} OVERCOOKED AND BURNED !!!", itemInUtensil.getName());
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    LOGGER.info("Burn timer interrupted/cancelled.");
+                    Thread.currentThread().interrupt();
+                } finally {
+                    this.isBurnTimerActive = false;
+                }
+            }, "BurnTimerThread").start();
         }
     }
     
-    // Metode untuk mengambil Utensil
-    public Item pickUpUtensil() {
-        Item utensil = this.currentUtensil;
-        this.currentUtensil = null;
-        this.isCooking = false;
-        this.cookingProgress = 0;
-        return utensil;
+    /**
+     * Stops the burn timer logic, called when the item is removed.
+     */
+    private void stopBurnTimer() {
+        this.isBurnTimerActive = false;
+        LOGGER.debug("Burn timer logic cancelled via flag.");
     }
 
-    // Logika thread memasak (disimulasikan dengan method)
-    public void startCooking() {
-        if (currentUtensil != null && itemOnTile != null && !isCooking) {
-            // Asumsi itemOnTile adalah bahan yang akan dimasak (di dalam Utensil)
-            this.isCooking = true;
-            this.cookingProgress = 0;
-            // Dalam implementasi nyata, ini akan menjadi thread/timer.
-            System.out.println("Cooking started for item: " + itemOnTile.toString());
-        }
-    }
-    
-    public void updateCooking() {
-        if (isCooking && cookingProgress < MAX_COOKING_TIME) {
-            cookingProgress++;
-            System.out.println("Cooking progress: " + cookingProgress + "/" + MAX_COOKING_TIME);
-            if (cookingProgress >= MAX_COOKING_TIME) {
-                // Item selesai dimasak. Anggota 3 akan mengganti itemOnTile.
-                // Placeholder: Item selesai dimasak
-                System.out.println("Cooking finished. Item ready.");
-                this.isCooking = false;
-            }
-        }
-    }
 
-    public boolean isCooking() {
-        return isCooking;
-    }
-    
-    public int getCookingProgress() {
-        return cookingProgress;
-    }
     @Override
     public void interact(Chef chef) {
-    // Taruh item
-        if (itemOnTile == null && chef.getInventory() != null) {
-        this.itemOnTile = chef.dropItem();
+        if (chef.getCurrentAction() == org.example.chef.ChefActionState.BUSY) {
+            LOGGER.info("{} is busy and cannot interact.", chef.getName());
+            return;
         }
-        else if (itemOnTile != null && chef.getInventory() == null) {
-        // Logic cek ingredient dan start cutting thread...
-        // chef.performLongAction(...)
+
+        Item heldItem = chef.getInventory();
+        Item itemOnStation = itemOnTile;
+
+        // --- Case 1: Chef has an item (Try to Place/Combine) ---
+        if (heldItem != null) {
+            // A. Add Ingredient into a Utensil on the Station
+            if (itemOnStation instanceof KitchenUtensil utensil && heldItem instanceof Ingredient ingredient) {
+                if (utensil.canAccept(ingredient)) {
+                    utensil.addIngredient(ingredient);
+                    chef.dropItem();
+                    LOGGER.info("{} placed {} into {}.", chef.getName(), ingredient.getName(), utensil.getName());
+                    return;
+                }
+            }
+            
+            // B. Place item on empty station (this includes placing the FryingPan/Utensil)
+            if (itemOnStation == null) {
+                this.itemOnTile = chef.dropItem();
+                LOGGER.info("{} placed {} on Cooking Station.", chef.getName(), itemOnTile.getName());
+                return;
+            }
         }
-}
+        
+        // --- Case 2: Chef is empty (Try to Pick Up/Start Cooking) ---
+        if (heldItem == null) {
+            // A. Start Cooking (Requires Ingredient inside KitchenUtensil on tile)
+            if (itemOnStation instanceof KitchenUtensil utensil && !utensil.getContents().isEmpty()) {
+                if (utensil.getContents().get(0) instanceof Ingredient ingredient) {
+                    
+                    // Logic to start cooking only if it's raw/chopped and cookable (MEAT)
+                    if (ingredient.canBeCooked() && ingredient.getState() != org.example.item.IngredientState.COOKED) {
+                        LOGGER.info("{} started cooking {}.", chef.getName(), ingredient.getName());
+                        
+                        // Perform the cooking action (Stage 1: Cook)
+                        chef.performLongAction(COOKING_TIME_SECONDS, () -> {
+                            // On successful cook, update state and trigger the Burn Timer (Stage 2: Burn)
+                            ingredient.cook();
+                            LOGGER.info("Cooking finished. {} is now cooked inside {}.", ingredient.getName(), utensil.getName());
+                            startBurnTimer(ingredient);
+                        });
+                        return;
+                    }
+                    // Handle case where chef interacts but item is done/burnt
+                    else if (ingredient.getState() == org.example.item.IngredientState.COOKED) {
+                        LOGGER.warn("{} attempted to cook already COOKED item.", chef.getName());
+                        // If already cooked, ensure burn timer is active if it's not burnt
+                        if (!isBurnTimerActive && ingredient.getState() != org.example.item.IngredientState.BURNED) {
+                             startBurnTimer(ingredient); // Re-activate burn timer if chef nudges the station
+                        }
+                    } 
+                    else if (ingredient.getState() == org.example.item.IngredientState.BURNED) {
+                        LOGGER.warn("{} attempted to interact with a BURNED item.", chef.getName());
+                    }
+                }
+            }
+            
+            // B. Pick up item from station
+            if (itemOnStation != null) {
+                stopBurnTimer(); // Stop burn timer BEFORE item is picked up
+                chef.setInventory(itemOnStation);
+                this.itemOnTile = null;
+                LOGGER.info("{} picked up {} from Cooking Station.", chef.getName(), chef.getInventory().getName());
+                return;
+            }
+        }
+        
+        LOGGER.warn("{} tried to interact, but nothing happened.", chef.getName());
+    }
 }
