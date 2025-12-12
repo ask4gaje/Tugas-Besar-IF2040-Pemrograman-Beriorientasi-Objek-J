@@ -17,30 +17,40 @@ public class AssemblyStation extends AbstractStation {
 
     @Override
     public void interact(Chef chef) {
-        // --- Case A: Try to Combine (Plating: Plate in hand + Ingredient on Tile) ---
-        if (chef.getInventory() instanceof Plate plate && itemOnTile instanceof Ingredient ingredient) {
+        Item heldItem = chef.getInventory();
+
+        if (heldItem instanceof Plate plate && itemOnTile instanceof Ingredient ingredient) {
             if (ingredient.canBePlacedOnPlate()) {
-                // Ingredient is consumed and added to the Plate
                 plate.addDishComponent(ingredient);
-                this.itemOnTile = null;
-                LOGGER.info("{} successfully added {} to their plate: {}", chef.getName(), ingredient.getName(), plate.getName());
+                this.itemOnTile = null; 
+                LOGGER.info("{} added {} from station to their plate.", chef.getName(), ingredient.getName());
                 return;
             } else {
-                LOGGER.warn("Cannot combine: {} is not prepared for plating.", ingredient.getName());
+                LOGGER.warn("Cannot combine: {} is not prepared.", ingredient.getName());
                 return;
             }
         }
 
-        // --- Case B: Try to pick up item (Chef is empty) ---
-        if (itemOnTile != null && chef.getInventory() == null) {
+        if (heldItem instanceof Ingredient ingredient && itemOnTile instanceof Plate plate) {
+            if (ingredient.canBePlacedOnPlate()) {
+                plate.addDishComponent(ingredient);
+                chef.dropItem(); 
+                LOGGER.info("{} placed {} onto the plate on station.", chef.getName(), ingredient.getName());
+                return;
+            } else {
+                LOGGER.warn("Cannot place {} on plate: not prepared.", ingredient.getName());
+                return;
+            }
+        }
+
+        if (itemOnTile != null && heldItem == null) {
             chef.setInventory(this.itemOnTile);
             this.itemOnTile = null;
             LOGGER.info("{} took {} from Assembly Station.", chef.getName(), chef.getInventory().getName());
             return;
         }
 
-        // --- Case C: Try to drop item (Station is empty) ---
-        else if (itemOnTile == null && chef.getInventory() != null) {
+        else if (itemOnTile == null && heldItem != null) {
             this.itemOnTile = chef.dropItem();
             LOGGER.info("{} placed {} on Assembly Station.", chef.getName(), itemOnTile.getName());
             return;
