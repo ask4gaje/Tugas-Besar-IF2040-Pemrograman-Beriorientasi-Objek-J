@@ -90,7 +90,13 @@ public class GameMap {
                         grid[y][x] = new WashingStation(pos);
                         break;
                     case 'I':
-                        grid[y][x] = new IngredientStorage(pos, IngredientType.MEAT); // Anggota 2/3 harus sediakan logic ini
+                        IngredientType type = IngredientType.BUN;
+                        if (x == 0 && y == 2) type = IngredientType.BUN;      
+                        else if (x == 0 && y == 4) type = IngredientType.MEAT; 
+                        else if (x == 0 && y == 6) type = IngredientType.CHEESE;
+                        else if (x == 8 && y == 0) type = IngredientType.LETTUCE; 
+                        else if (x == 5 && y == 4) type = IngredientType.TOMATO;  
+                        grid[y][x] = new IngredientStorage(pos, type);
                         break;
                     case 'P':
                         grid[y][x] = new PlateStorage(pos);
