@@ -7,11 +7,10 @@ import org.example.controller.GameController; // Import Controller
 public class GameWindow {
 
     public GameWindow(Stage stage) {
-        GameView view = new GameView();
+        GamePanel root = new GamePanel();
+        GameController controller = new GameController(root);
 
-        GameController controller = new GameController(view);
-
-        Scene scene = new Scene(view);
+        Scene scene = new Scene(root);
 
         controller.input(scene);
 

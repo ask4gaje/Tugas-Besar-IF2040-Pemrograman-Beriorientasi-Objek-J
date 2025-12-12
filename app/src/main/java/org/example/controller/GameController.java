@@ -2,7 +2,7 @@ package org.example.controller;
 
 import org.example.GameManager;
 import org.example.chef.Direction;
-import org.example.view.GameView;
+import org.example.view.GamePanel;
 
 import javafx.animation.AnimationTimer;
 import javafx.scene.Scene;
@@ -11,22 +11,11 @@ import javafx.scene.input.KeyCode;
 public class GameController {
 
     private final GameManager manager;
-    private final GameView view;
 
-    public GameController(GameView view) {
+    public GameController(GamePanel view) {
         this.manager = GameManager.getInstance();
-        this.view = view;
-        startLoop();
     }
 
-    private void startLoop() {
-        new AnimationTimer() {
-            @Override
-            public void handle(long now) {
-                view.render(); 
-            }
-        }.start();
-    }
 
     public void input(Scene scene) {
         scene.setOnKeyPressed(e -> {
@@ -39,9 +28,8 @@ public class GameController {
                 case A -> manager.moveChef(Direction.LEFT);
                 case S -> manager.moveChef(Direction.DOWN);
                 case D -> manager.moveChef(Direction.RIGHT);
-                
+                case V -> manager.interact();
                 case C -> System.out.println("Pick/Drop (Belum implementasi)");
-                
                 case B -> manager.switchChef();
             }
         });
