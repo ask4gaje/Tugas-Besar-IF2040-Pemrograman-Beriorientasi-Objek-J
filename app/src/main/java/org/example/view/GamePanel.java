@@ -36,6 +36,7 @@ public class GamePanel extends BorderPane {
 
     public static final int TILE = 64;
     private final AnimationTimer loop;
+    private final MainMenu mainMenu;
 
     private final Map<String, Image> tileImages = new HashMap<>();
     private final Map<String, Image> itemImages = new HashMap<>();
@@ -44,6 +45,7 @@ public class GamePanel extends BorderPane {
 
     public GamePanel() {
         this.manager = GameManager.getInstance();
+        this.mainMenu = new MainMenu();
 
         int width = 14 * TILE;
         int height = 10 * TILE;
@@ -75,8 +77,20 @@ public class GamePanel extends BorderPane {
 
         hudBox.getChildren().addAll(title, timeLabel, scoreLabel, active, new Label("Orders:"), orderList);
 
-        this.setRight(hudBox);
+        hudBox.setVisible(false);
         loadImages();
+
+        this.setOnMouseMoved(e -> {
+            if (mainMenu.getState() != MainMenu.MenuState.INGAME) {
+                mainMenu.update(e.getX(), e.getY());
+            }
+        });
+
+        this.setOnMouseClicked(e -> {
+            if (mainMenu.getState() != MainMenu.MenuState.INGAME) {
+                mainMenu.onClick(e.getX(), e.getY());
+            }
+        });
 
         loop = new AnimationTimer() {
             @Override
@@ -177,13 +191,36 @@ public class GamePanel extends BorderPane {
 
     private void draw() {
         GraphicsContext g = canvas.getGraphicsContext2D();
-        g.setFill(Color.web("#222"));
-        g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        
+        g.clearRect(0, 0, canvas.getWidth(), canvas.getHeight());
 
+        g.setFill(Color.web("#222")); // Warna lantai dasar
+        g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+        
         drawGrid(g);
         drawItems(g);
         drawChefs(g);
-        drawProgressBars(g);
+
+        if (mainMenu.getState() == MainMenu.MenuState.INGAME) {
+            if (!manager.isRunning()) {
+                manager.start();
+            }
+
+            if (!hudBox.isVisible()) {
+                hudBox.setVisible(true);
+            }
+
+            drawProgressBars(g);
+
+        } else {
+            if (hudBox.isVisible()) {
+                hudBox.setVisible(false);
+            }
+
+            g.setFill(Color.rgb(0, 0, 0, 0.6));
+            g.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
+            mainMenu.draw(g);
+        }
     }
 
     private void drawGrid(GraphicsContext g) {

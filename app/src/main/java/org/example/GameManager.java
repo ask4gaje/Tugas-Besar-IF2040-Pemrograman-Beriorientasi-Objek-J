@@ -31,7 +31,6 @@ public class GameManager {
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
     private static final Random RANDOM = new Random();
 
-    // --- New Recipe/Order Data ---
     private static final List<String> ALL_RECIPES = Arrays.asList(
             "Classic Burger Dish",
             "Cheese Burger Dish",
@@ -45,20 +44,19 @@ public class GameManager {
             "Deluxe Burger Dish", 200
     );
 
-    // FIX: Define fixed time limits for each recipe
     private static final Map<String, Integer> RECIPE_TIME_LIMIT = Map.of(
-            "Classic Burger Dish", 45, // 45 seconds
-            "Cheese Burger Dish", 60,  // 60 seconds
-            "BLT Burger Dish", 75,     // 75 seconds
-            "Deluxe Burger Dish", 75   // 75 seconds
+            "Classic Burger Dish", 45, 
+            "Cheese Burger Dish", 60,  
+            "BLT Burger Dish", 75,     
+            "Deluxe Burger Dish", 75   
     );
 
-    private static final int MAX_ACTIVE_ORDERS = 2; // Maximum orders at a time
-    // --- End Recipe/Order Data ---
+    private static final int MAX_ACTIVE_ORDERS = 2; 
 
     private static GameManager instance;
 
     private GameState currentState;
+    private boolean running = false;
     private int failedOrderCount;
     private GameMap currentMap;
     private Position chefSpawnA;
@@ -92,8 +90,18 @@ public class GameManager {
         loadStage(MapLayouts.BURGER_MAP_LAYOUT);
 
         this.currentState = GameState.STAGE_SELECT;
+    }
 
-        startGame();
+    public void start() {
+        if (running) return; 
+        running = true;
+        
+        logger.info("Menerima sinyal START dari MainMenu.");
+        startGame(); 
+    }
+
+    public boolean isRunning() {
+        return running;
     }
 
     public void loadStage(String[] layout) {
