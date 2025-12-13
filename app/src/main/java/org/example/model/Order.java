@@ -1,6 +1,6 @@
 package org.example.model;
 
-public class    Order {
+public class Order {
     private int id;
     private String recipe;
     private int timeLeft;
@@ -17,6 +17,9 @@ public class    Order {
     public String getRecipe() { return recipe; }
     public int getTimeLeft() { return timeLeft; }
     public int getReward() { return reward; }
+
+    // FIX: Add setter for timeLeft
+    public void setTimeLeft(int timeLeft) { this.timeLeft = timeLeft; }
 
     @Override
     public String toString() {

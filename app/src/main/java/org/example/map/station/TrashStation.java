@@ -27,7 +27,7 @@ public class TrashStation extends AbstractStation {
                 // Get the name of the contents for logging before they are cleared.
                 String contentsName = plate.getDish() != null ? plate.getDish().getName() : (plate.getContents().isEmpty() ? "nothing" : "partial dish contents");
 
-                ((Plate) heldItem).clean();
+                plate.clean();
 
                 // Log the action.
                 if (contentsName.equals("nothing")) {

@@ -5,13 +5,14 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays; // ADDED
+import java.util.List; // ADDED
+import java.util.Map; // ADDED
+import java.util.Random; // ADDED
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
+// Removed unused import: java.util.concurrent.atomic.AtomicInteger;
 
 import org.example.config.MapLayouts;
 import org.example.map.GameMap;
@@ -21,14 +22,35 @@ import org.example.chef.Position;
 import org.example.chef.Chef;
 import org.example.chef.Direction;
 import org.example.model.Order;
+import org.example.item.Plate; // ADDED
+import org.example.item.Item; // ADDED
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class GameManager {
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
-    
-    private static GameManager instance; 
+    private static final Random RANDOM = new Random(); // FIX: Declared and Initialized
+
+    // --- New Recipe/Order Data ---
+    private static final List<String> ALL_RECIPES = Arrays.asList(
+            "Classic Burger Dish",
+            "Cheese Burger Dish",
+            "BLT Burger Dish",
+            "Deluxe Burger Dish"
+    );
+    private static final Map<String, Integer> RECIPE_REWARD = Map.of(
+            "Classic Burger Dish", 100,
+            "Cheese Burger Dish", 120,
+            "BLT Burger Dish", 150,
+            "Deluxe Burger Dish", 200
+    );
+    private static final int MIN_ORDER_TIME = 45;
+    private static final int MAX_ORDER_TIME = 90;
+    private static final int MAX_ACTIVE_ORDERS = 2; // Maximum orders at a time
+    // --- End Recipe/Order Data ---
+
+    private static GameManager instance;
 
     private GameState currentState;
     private int failedOrderCount;
@@ -37,10 +59,11 @@ public class GameManager {
     private Position chefSpawnB;
     private List<Chef> chefs = new ArrayList<>();
     private IntegerProperty score = new SimpleIntegerProperty(0);
-    private IntegerProperty activeChefIndex = new SimpleIntegerProperty(0); 
+    private IntegerProperty activeChefIndex = new SimpleIntegerProperty(0);
     private StringProperty activeChefName = new SimpleStringProperty("");
 
     private ScheduledExecutorService timerScheduler;
+    private ScheduledExecutorService orderScheduler; // FIX: Declared
     private IntegerProperty timeRemaining = new SimpleIntegerProperty(180);
     private ObservableList<Order> orders = FXCollections.observableArrayList();
     private final int MAX_GAME_DURATION = 180; // 3 menit (Contoh)
@@ -60,25 +83,25 @@ public class GameManager {
 
     public void initialize() {
         logger.info("Memuat Stage: Burger Map...");
-        loadStage(MapLayouts.BURGER_MAP_LAYOUT); 
-        
+        loadStage(MapLayouts.BURGER_MAP_LAYOUT);
+
         this.currentState = GameState.STAGE_SELECT;
 
         startGame();
     }
-    
+
     public void loadStage(String[] layout) {
         this.currentMap = new GameMap();
         this.currentMap.loadMap(layout);
         this.chefSpawnA = this.currentMap.getChefSpawnA();
         this.chefSpawnB = this.currentMap.getChefSpawnB();
         logger.info("Stage dimuat. Posisi awal Chef A: ({},{}), Chef B: ({},{})",
-                    chefSpawnA.getX(), chefSpawnA.getY(), chefSpawnB.getX(), chefSpawnB.getY());
+                chefSpawnA.getX(), chefSpawnA.getY(), chefSpawnB.getX(), chefSpawnB.getY());
     }
 
     public void startGame() {
         if (currentState == GameState.PLAYING) return;
-        
+
         if (this.chefs == null) {
             this.chefs = new ArrayList<>();
         } else {
@@ -87,25 +110,22 @@ public class GameManager {
 
         Chef c1 = new Chef("C1", "Chef A", chefSpawnA != null ? chefSpawnA : new Position(1, 1));
         Chef c2 = new Chef("C2", "Chef B", chefSpawnB != null ? chefSpawnB : new Position(2, 1));
-        
+
         chefs.add(c1);
         chefs.add(c2);
 
-        this.activeChefIndex.set(0); 
+        this.activeChefIndex.set(0);
         chefs.get(0).setActive(true);
         activeChefName.set(chefs.get(0).getName());
 
         orders.clear();
-        orders.addAll(
-            new Order(1, "Burger", 60, 100),
-            new Order(2, "Cheese Burger", 45, 120)
-        );
 
         this.currentState = GameState.PLAYING;
-        this.failedOrderCount = 0; 
+        this.failedOrderCount = 0;
         this.score.set(0);
         logger.info("Permainan Dimulai. Waktu: {} detik", MAX_GAME_DURATION);
         startTimer(MAX_GAME_DURATION);
+        startOrderGenerator();
     }
 
     private void startTimer(int duration) {
@@ -122,12 +142,88 @@ public class GameManager {
                 int current = timeRemaining.get();
                 if (current > 0) {
                     timeRemaining.set(current - 1);
+
+                    // Decrement time for active orders
+                    orders.removeIf(order -> {
+                        order.setTimeLeft(order.getTimeLeft() - 1);
+                        if (order.getTimeLeft() <= 0) {
+                            logger.warn("Order {} failed (Time's up)!", order.getId());
+                            increaseFailedOrderCount();
+                            return true; // Remove the failed order
+                        }
+                        return false;
+                    });
                 } else {
                     endStage(EndCondition.TIMES_UP);
                     timerScheduler.shutdown();
                 }
             });
-        }, 1, 1, TimeUnit.SECONDS); 
+        }, 1, 1, TimeUnit.SECONDS);
+    }
+
+    private void startOrderGenerator() {
+        this.orderScheduler = Executors.newSingleThreadScheduledExecutor();
+        // Check every 3 seconds if a new order is needed
+        orderScheduler.scheduleAtFixedRate(() -> {
+            Platform.runLater(this::generateNewOrder);
+        }, 5, 3, TimeUnit.SECONDS); // Delay 5s, Repeat 3s
+    }
+
+    private void generateNewOrder() {
+        if (currentState != GameState.PLAYING || orders.size() >= MAX_ACTIVE_ORDERS) {
+            return;
+        }
+
+        // Randomly select a recipe
+        String recipe = ALL_RECIPES.get(RANDOM.nextInt(ALL_RECIPES.size()));
+        int time = RANDOM.nextInt(MAX_ORDER_TIME - MIN_ORDER_TIME) + MIN_ORDER_TIME;
+        int reward = RECIPE_REWARD.get(recipe);
+
+        // Generate a simple ID (max current ID + 1)
+        int newId = 1;
+        if (!orders.isEmpty()) {
+            newId = orders.stream().mapToInt(Order::getId).max().orElse(0) + 1;
+        }
+
+        Order newOrder = new Order(newId, recipe, time, reward);
+        orders.add(newOrder);
+        logger.info("New Order received: {} (Reward: {})", newOrder.getRecipe(), newOrder.getReward());
+    }
+
+    /**
+     * Attempts to validate the served item against existing orders.
+     * @param servedItem The item (should be a Plate) served by the chef.
+     * @return The score obtained, or 0 if invalid/no matching order.
+     */
+    public int validateOrder(Item servedItem) {
+        if (!(servedItem instanceof Plate plate)) {
+            logger.warn("Served item is not a Plate. Invalid service.");
+            increaseFailedOrderCount();
+            return 0;
+        }
+
+        // Get the official name of the completed dish from the Plate object
+        String dishName = plate.getName();
+
+        // Find a matching order
+        Order matchedOrder = null;
+        for (Order order : orders) {
+            if (order.getRecipe().equals(dishName)) {
+                matchedOrder = order;
+                break;
+            }
+        }
+
+        if (matchedOrder != null) {
+            orders.remove(matchedOrder);
+            updateScore(matchedOrder.getReward());
+            logger.info("Order {} (Recipe: {}) fulfilled successfully!", matchedOrder.getId(), matchedOrder.getRecipe());
+            return matchedOrder.getReward();
+        } else {
+            logger.warn("Served dish {} does not match any active order.", dishName);
+            increaseFailedOrderCount();
+            return 0;
+        }
     }
 
     public void moveChef(Direction dir) {
@@ -149,13 +245,13 @@ public class GameManager {
         Chef newChef = getActiveChef();
         newChef.setActive(true);
         activeChefName.set(newChef.getName());
-        
+
         logger.info("Switch Chef ke: {}", newChef.getName());
     }
 
     public void interact() {
         Chef active = getActiveChef();
-        
+
         if (active != null && currentState == GameState.PLAYING) {
             active.interact(currentMap);
         }
@@ -163,7 +259,7 @@ public class GameManager {
 
     public void grabItem() {
         Chef active = getActiveChef();
-        
+
         if (active != null && currentState == GameState.PLAYING) {
             active.grabItem(currentMap);
         }
@@ -195,14 +291,19 @@ public class GameManager {
             logger.info("Scheduler Timer dihentikan.");
         }
 
+        if (orderScheduler != null && !orderScheduler.isShutdown()) {
+            orderScheduler.shutdownNow();
+            logger.info("Order Scheduler dihentikan.");
+        }
+
         logger.info("=== STAGE OVER! ===");
         logger.info("Kondisi: {}", condition);
         logger.info("SKOR AKHIR: {}", score);
 
-        boolean isPassed = condition == EndCondition.TIMES_UP && score.get() >= 500; 
+        boolean isPassed = condition == EndCondition.TIMES_UP && score.get() >= 500;
         logger.info("STATUS KELULUSAN: {}", isPassed ? "PASS" : "FAIL");
     }
-    
+
     public GameMap getCurrentMap() {
         return currentMap;
     }
@@ -233,7 +334,7 @@ public class GameManager {
     public DoubleProperty getProgress(String chefName) {
         for (Chef c : chefs) {
             if (c.getName().equals(chefName)) {
-                return c.actionProgressProperty(); 
+                return c.actionProgressProperty();
             }
         }
         return null;
@@ -244,9 +345,8 @@ public class GameManager {
     public StringProperty activeChefNameProperty() { return activeChefName; }
     public ObservableList<Order> getOrders() { return orders; }
 
-    public Chef getActiveChef() { 
+    public Chef getActiveChef() {
         if (chefs == null || chefs.isEmpty()) return null;
-        return chefs.get(activeChefIndex.get()); 
+        return chefs.get(activeChefIndex.get());
     }
-
 }

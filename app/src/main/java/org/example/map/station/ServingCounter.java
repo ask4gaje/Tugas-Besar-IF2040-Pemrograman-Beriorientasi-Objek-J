@@ -1,5 +1,6 @@
 package org.example.map.station;
 
+import org.example.GameManager;
 import org.example.chef.Chef;
 import org.example.chef.Position;
 import org.example.item.Item;
@@ -19,13 +20,19 @@ public class ServingCounter extends AbstractStation {
     @Override
     public void pickUp(Chef chef) {
         if (chef.getInventory() != null) {
-            Item servedItem = chef.dropItem();
-            LOGGER.info("{} served {}. (Validation Pending)", chef.getName(), servedItem.getName());
+            Item servedItem = chef.getInventory();
 
-            // Di sini nanti panggil logic GameManager untuk cek Order & Score
-            // int score = GameManager.getInstance().validateOrder(servedItem);
+            // Validate order via GameManager
+            int score = GameManager.getInstance().validateOrder(servedItem);
 
-            // Item dianggap "terkirim" dan hilang dari dunia game
+            if (score > 0) {
+                // If validation passed, drop the item permanently (serve)
+                chef.dropItem();
+                LOGGER.info("{} served {} successfully. Score: {}", chef.getName(), servedItem.getName(), score);
+            } else {
+                // If invalid, the item remains in the chef's hand, and GameManager logs the failure.
+                LOGGER.warn("{} failed to serve {}. Item retained.", chef.getName(), servedItem.getName());
+            }
         }
     }
 }
