@@ -45,23 +45,13 @@ public class GameManager {
     );
 
     private static final Map<String, Integer> RECIPE_TIME_LIMIT = Map.of(
-<<<<<<< HEAD
             "Classic Burger Dish", 45, 
             "Cheese Burger Dish", 60,  
             "BLT Burger Dish", 75,     
             "Deluxe Burger Dish", 75   
     );
 
-    private static final int MAX_ACTIVE_ORDERS = 2; 
-=======
-            "Classic Burger Dish", 60,
-            "Cheese Burger Dish", 75,
-            "BLT Burger Dish", 90,
-            "Deluxe Burger Dish", 90
-    );
-
     private static final int MAX_ACTIVE_ORDERS = 2;
->>>>>>> 0e9bc1f14e1602c40b2a8216cc6d9b8882b51b91
 
     private static GameManager instance;
 
