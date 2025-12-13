@@ -49,7 +49,7 @@ public class CookingStation extends AbstractStation {
         if (ingredient.canBeCooked() && ingredient.getState() != org.example.item.IngredientState.COOKED) {
 
             stopTimers();
-
+            ingredient.cooking();
             LOGGER.info("Cooking timer started for {}.", ingredient.getName());
             cookingProgress.set(0.0);
 
@@ -62,7 +62,7 @@ public class CookingStation extends AbstractStation {
 
                         if (currentProgress >= 1.0) {
                             stop();
-                            ingredient.cook();
+                            ingredient.cooked();
                             LOGGER.info("Cooking finished. {} is now cooked.", ingredient.getName());
                             cookingProgress.set(0.0);
 

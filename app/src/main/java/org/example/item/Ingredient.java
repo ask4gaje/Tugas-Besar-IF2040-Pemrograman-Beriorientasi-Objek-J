@@ -46,7 +46,13 @@ public class Ingredient extends Item implements Preparable {
     }
 
     @Override
-    public void cook() {
+    public void cooking() {
+        this.state = IngredientState.COOKING;
+        updateName();
+    }
+
+    @Override
+    public void cooked() {
         this.state = IngredientState.COOKED;
         updateName();
     }

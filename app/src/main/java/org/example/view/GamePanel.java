@@ -168,6 +168,11 @@ public class GamePanel extends BorderPane {
             itemImages.put("Plate", new Image(getClass().getResourceAsStream("/asset/item/utensil/plate.png")));
             itemImages.put("Frying Pan", new Image(getClass().getResourceAsStream("/asset/item/utensil/fryingpan.png")));
 
+            itemImages.put("Pan Raw", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_raw.png")));
+            itemImages.put("Pan Cooking", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_cooking.png")));
+            itemImages.put("Pan Cooked", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_cooked.png")));
+            itemImages.put("Pan Burned", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_burned.png")));
+
             itemImages.put("plater", new Image(getClass().getResourceAsStream("/asset/platecombi/plater.png")));
             itemImages.put("plated", new Image(getClass().getResourceAsStream("/asset/platecombi/plated.png")));
             itemImages.put("platek", new Image(getClass().getResourceAsStream("/asset/platecombi/platek.png")));
@@ -269,17 +274,30 @@ public class GamePanel extends BorderPane {
             return typeLabel + " " + stateFormatted;
         }
 
-        // --- MODIFIED LOGIC FOR PLATE ---
+        if (item instanceof FryingPan fryingPan) {
+            List<Preparable> contents = fryingPan.getContents();
+            if (!contents.isEmpty() && contents.get(0) instanceof Ingredient ingredient) {
+                switch (ingredient.getState()) {
+                    case RAW:
+                    case CHOPPED:
+                        return "Pan Raw";
+                    case COOKING:
+                        return "Pan Cooking";
+                    case COOKED:
+                        return "Pan Cooked";
+                    case BURNED:
+                        return "Pan Burned";
+                    default:
+                        break;
+                }
+            }
+        }
         if (item instanceof Plate plate) {
-            // 1. If the plate has a final dish name (e.g., "Classic Burger Dish"), use the full menu image.
             if (itemImages.containsKey(item.getName())) {
                 return item.getName();
             }
-            // 2. Otherwise, use the combination logic to get the composite image.
             return getPlateCombinationKey(plate);
         }
-        // --- END MODIFIED LOGIC FOR PLATE ---
-
         return item.getName();
     }
 
