@@ -122,13 +122,13 @@ public class GamePanel extends BorderPane {
             itemImages.put("Daging Burned", new Image(getClass().getResourceAsStream("/asset/item/ingredient/daging_BURNED.png")));
 
             itemImages.put("Keju Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/keju_RAW.png")));
-            itemImages.put("Keju", new Image(getClass().getResourceAsStream("/asset/item/ingredient/keju_CHOPPED.png")));
+            itemImages.put("Keju Chopped", new Image(getClass().getResourceAsStream("/asset/item/ingredient/keju_CHOPPED.png")));
 
             itemImages.put("Lettuce Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/lettuce_RAW.png")));
-            itemImages.put("Lettuce", new Image(getClass().getResourceAsStream("/asset/item/ingredient/lettuce_CHOPPED.png")));
+            itemImages.put("Lettuce Chopped", new Image(getClass().getResourceAsStream("/asset/item/ingredient/lettuce_CHOPPED.png")));
 
             itemImages.put("Tomat Raw", new Image(getClass().getResourceAsStream("/asset/item/ingredient/tomat_RAW.png")));
-            itemImages.put("Tomat", new Image(getClass().getResourceAsStream("/asset/item/ingredient/tomat_CHOPPED.png")));
+            itemImages.put("Tomat Chopped", new Image(getClass().getResourceAsStream("/asset/item/ingredient/tomat_CHOPPED.png")));
 
 
             itemImages.put("Classic Burger", new Image(getClass().getResourceAsStream("/asset/item/menu/classicburger.png")));
@@ -211,9 +211,15 @@ public class GamePanel extends BorderPane {
                 } else if (t instanceof CookingStation) {
                     img = tileImages.get("COOK"); 
                     fallbackColor = Color.RED;
-                } else if (t instanceof IngredientStorage) {
-                    img = tileImages.get("INGREDIENT"); 
-                    fallbackColor = Color.CYAN;
+                } else if (t instanceof IngredientStorage ingredientStorage) {
+                    switch (ingredientStorage.getStorageType()) {
+                        case BUN -> img = tileImages.get("BUN STORAGE");
+                        case MEAT -> img = tileImages.get("MEAT STORAGE");
+                        case CHEESE -> img = tileImages.get("CHEESE STORAGE");
+                        case LETTUCE -> img = tileImages.get("LETTUCE STORAGE");
+                        case TOMATO -> img = tileImages.get("TOMATO STORAGE");
+                        default -> img = tileImages.get("INGREDIENT"); // Fallback to generic image
+                    }
                 } else if (t instanceof ServingCounter) {
                     img = tileImages.get("SERVE"); 
                     fallbackColor = Color.GOLD;
