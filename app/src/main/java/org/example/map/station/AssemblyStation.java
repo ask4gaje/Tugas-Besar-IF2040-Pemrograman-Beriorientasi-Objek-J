@@ -27,8 +27,21 @@ public class AssemblyStation extends AbstractStation {
         Item heldItem = chef.getInventory();
         Item itemOnStation = itemOnTile;
 
+        if (heldItem instanceof FryingPan fryingPan && itemOnStation instanceof Plate plate && !fryingPan.getContents().isEmpty()) {
+            Preparable content = fryingPan.getContents().get(0);
+            if (content instanceof Ingredient ingredient && ingredient.canBePlacedOnPlate()) {
+                plate.addDishComponent(ingredient);
+                fryingPan.clearContents();
+                LOGGER.info("{} transferred {} from Frying Pan onto Plate on Assembly Station.", chef.getName(), ingredient.getName());
+                return;
+            } else {
+                LOGGER.warn("Cannot transfer: Item in Frying Pan is not prepared or cannot be placed on a plate.");
+                return;
+            }
+        }
+
         if (heldItem instanceof FryingPan fryingPan && itemOnStation == null) {
-            List<Preparable> contents = fryingPan.getContents(); // Retrieve contents
+            List<Preparable> contents = fryingPan.getContents();
             if (!contents.isEmpty()) {
                 Ingredient ingredientToDump = (Ingredient) contents.get(0);
 

@@ -324,26 +324,73 @@ public class GamePanel extends BorderPane {
     }
 
     private void drawProgressBars(GraphicsContext g) {
-        if (manager.getChefs() == null) return;
+        GameMap map = manager.getCurrentMap();
+        if (map == null) return;
 
-        for (Chef c : manager.getChefs()) {
-            Double prog = manager.getProgress(c.getName()).get();
-            
-            if (prog > 0 && prog < 1.0) {
-                double x = c.getPosition().getX() * TILE;
-                double y = c.getPosition().getY() * TILE - 10;
-                double width = TILE - 8;
+        // --- Draw Chef Action Progress Bars (Existing Logic) ---
+        if (manager.getChefs() != null) {
+            for (Chef c : manager.getChefs()) {
+                Double prog = manager.getProgress(c.getName()).get();
 
-                g.setFill(Color.gray(0.3));
-                g.fillRect(x + 4, y, width, 6);
+                if (prog > 0 && prog < 1.0) {
+                    double x = c.getPosition().getX() * TILE;
+                    double y = c.getPosition().getY() * TILE - 10;
+                    double width = TILE - 8;
 
-                g.setFill(Color.LIME);
-                g.fillRect(x + 4, y, width * prog, 6);
+                    g.setFill(Color.gray(0.3));
+                    g.fillRect(x + 4, y, width, 6);
 
-                g.setStroke(Color.BLACK);
-                g.strokeRect(x + 4, y, width, 6);
+                    g.setFill(Color.LIME);
+                    g.fillRect(x + 4, y, width * prog, 6);
+
+                    g.setStroke(Color.BLACK);
+                    g.strokeRect(x + 4, y, width, 6);
+                }
+            }
+        }
+        // --- End Chef Action Progress Bars ---
+
+        // --- Draw Station Progress Bars (New Logic) ---
+        for (int x = 0; x < 14; x++) {
+            for (int y = 0; y < 10; y++) {
+                Tile t = map.getTile(x, y);
+
+                if (t instanceof CookingStation cs) {
+                    double cookingProg = cs.cookingProgressProperty().get();
+                    double burnProg = cs.burnProgressProperty().get();
+                    double sx = x * TILE;
+                    double sy = y * TILE;
+                    double width = TILE - 8;
+
+                    // Draw Cooking Progress Bar (Green)
+                    if (cookingProg > 0.0 && cookingProg < 1.0) {
+                        double barY = sy - 15;
+                        g.setFill(Color.gray(0.3));
+                        g.fillRect(sx + 4, barY, width, 6);
+
+                        g.setFill(Color.YELLOWGREEN);
+                        g.fillRect(sx + 4, barY, width * cookingProg, 6);
+
+                        g.setStroke(Color.BLACK);
+                        g.strokeRect(sx + 4, barY, width, 6);
+                    }
+
+                    // Draw Burn Timer Progress Bar (Orange/Red)
+                    if (burnProg > 0.0) {
+                        double barY = sy - 8;
+                        Color barColor = burnProg < 1.0 ? Color.ORANGE : Color.RED;
+
+                        g.setFill(Color.gray(0.3));
+                        g.fillRect(sx + 4, barY, width, 6);
+
+                        g.setFill(barColor);
+                        g.fillRect(sx + 4, barY, width * burnProg, 6);
+
+                        g.setStroke(Color.BLACK);
+                        g.strokeRect(sx + 4, barY, width, 6);
+                    }
+                }
             }
         }
     }
-
 }
