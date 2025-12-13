@@ -21,25 +21,25 @@ public class TrashStation extends AbstractStation {
         Item heldItem = chef.getInventory();
 
         if (heldItem != null) {
-
-            // Check if the item is a Plate using pattern matching (Java 16+)
+            // Check if the item is a Plate using pattern matching (Java 16+ style)
             if (heldItem instanceof Plate plate) {
 
-                // If the plate has contents, log what is being discarded
-                if (!plate.getContents().isEmpty() || plate.getDish() != null) {
-                    // Note: plate.getDish().getName() may be null if the dish was just a single item, but this is a reasonable assumption based on prior code logic.
-                    String dishName = plate.getDish() != null ? plate.getDish().getName() : "contents";
-                    LOGGER.info("{} threw away dish {}. Plate remains in hand.", chef.getName(), dishName);
-                } else {
-                    LOGGER.info("{} Plate remains in hand.", chef.getName());
-                }
-            }
+                // Get the name of the contents for logging before they are cleared.
+                String contentsName = plate.getDish() != null ? plate.getDish().getName() : (plate.getContents().isEmpty() ? "nothing" : "partial dish contents");
 
-            else {
-                // For all other items (Ingredient, FryingPan, etc.), discard the item as before.
+                ((Plate) heldItem).clean();
+
+                // Log the action.
+                if (contentsName.equals("nothing")) {
+                    LOGGER.info("late remains in hand");
+                } else {
+                    LOGGER.info("{} discarded dish contents ({}) in trash. Plate remains in hand.", chef.getName(), contentsName);
+                }
+
+            } else {
+                // For all other items (Ingredient, FryingPan, etc.), discard the item completely.
                 Item item = chef.dropItem();
                 LOGGER.info("{} threw away {}.", chef.getName(), item.getName());
-                // Item lost
             }
         }
     }

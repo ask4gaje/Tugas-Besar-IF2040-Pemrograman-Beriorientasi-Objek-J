@@ -25,6 +25,8 @@ public class Plate extends KitchenUtensil {
     }
 
     public void clean() {
+        this.currentDish = null;
+        this.contents.clear();
         this.isClean = true;
         this.name = "Plate";
     }
