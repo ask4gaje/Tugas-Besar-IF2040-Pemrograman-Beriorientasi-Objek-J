@@ -104,14 +104,32 @@ public class CookingStation extends AbstractStation {
         
         // --- Case 2: Chef is empty (Try to Pick Up/Start Cooking) ---
         if (heldItem == null) {
-            // A. Start Cooking (Requires Ingredient inside KitchenUtensil on tile)
+            if (itemOnStation != null) {
+                stopBurnTimer(); // Stop burn timer BEFORE item is picked up
+                chef.setInventory(itemOnStation);
+                this.itemOnTile = null;
+                LOGGER.info("{} picked up {} from Cooking Station.", chef.getName(), chef.getInventory().getName());
+                return;
+            }
+        }
+        
+        LOGGER.warn("{} tried to interact, but nothing happened.", chef.getName());
+    }
+
+    @Override
+    public void interact(Chef chef) {
+        Item heldItem = chef.getInventory();
+        Item itemOnStation = itemOnTile;
+
+        if (heldItem == null){
+        // A. Start Cooking (Requires Ingredient inside KitchenUtensil on tile)
             if (itemOnStation instanceof KitchenUtensil utensil && !utensil.getContents().isEmpty()) {
                 if (utensil.getContents().get(0) instanceof Ingredient ingredient) {
-                    
+
                     // Logic to start cooking only if it's raw/chopped and cookable (MEAT)
                     if (ingredient.canBeCooked() && ingredient.getState() != org.example.item.IngredientState.COOKED) {
                         LOGGER.info("{} started cooking {}.", chef.getName(), ingredient.getName());
-                        
+
                         // Perform the cooking action (Stage 1: Cook)
                         chef.performLongAction(COOKING_TIME_SECONDS, () -> {
                             // On successful cook, update state and trigger the Burn Timer (Stage 2: Burn)
@@ -126,28 +144,13 @@ public class CookingStation extends AbstractStation {
                         LOGGER.warn("{} attempted to cook already COOKED item.", chef.getName());
                         // If already cooked, ensure burn timer is active if it's not burnt
                         if (!isBurnTimerActive && ingredient.getState() != org.example.item.IngredientState.BURNED) {
-                             startBurnTimer(ingredient); // Re-activate burn timer if chef nudges the station
+                            startBurnTimer(ingredient); // Re-activate burn timer if chef nudges the station
                         }
-                    } 
-                    else if (ingredient.getState() == org.example.item.IngredientState.BURNED) {
+                    } else if (ingredient.getState() == org.example.item.IngredientState.BURNED) {
                         LOGGER.warn("{} attempted to interact with a BURNED item.", chef.getName());
                     }
                 }
             }
-            
-            // B. Pick up item from station
-            if (itemOnStation != null) {
-                stopBurnTimer(); // Stop burn timer BEFORE item is picked up
-                chef.setInventory(itemOnStation);
-                this.itemOnTile = null;
-                LOGGER.info("{} picked up {} from Cooking Station.", chef.getName(), chef.getInventory().getName());
-                return;
-            }
         }
-        
-        LOGGER.warn("{} tried to interact, but nothing happened.", chef.getName());
     }
-
-    @Override
-    public void interact(Chef chef) {}
 }

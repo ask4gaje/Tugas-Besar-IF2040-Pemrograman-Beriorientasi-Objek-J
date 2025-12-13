@@ -31,7 +31,8 @@ public class ServingCounter extends AbstractStation {
                 LOGGER.info("{} served {} successfully. Score: {}", chef.getName(), servedItem.getName(), score);
             } else {
                 // If invalid, the item remains in the chef's hand, and GameManager logs the failure.
-                LOGGER.warn("{} failed to serve {}. Item retained.", chef.getName(), servedItem.getName());
+                chef.dropItem();
+                LOGGER.warn("{} failed to serve {}. Item gone.", chef.getName(), servedItem.getName());
             }
         }
     }

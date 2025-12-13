@@ -5,14 +5,13 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import java.util.ArrayList;
-import java.util.Arrays; // ADDED
-import java.util.List; // ADDED
-import java.util.Map; // ADDED
-import java.util.Random; // ADDED
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-// Removed unused import: java.util.concurrent.atomic.AtomicInteger;
 
 import org.example.config.MapLayouts;
 import org.example.map.GameMap;
@@ -22,15 +21,15 @@ import org.example.chef.Position;
 import org.example.chef.Chef;
 import org.example.chef.Direction;
 import org.example.model.Order;
-import org.example.item.Plate; // ADDED
-import org.example.item.Item; // ADDED
+import org.example.item.Plate;
+import org.example.item.Item;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
 public class GameManager {
     private static final Logger logger = LoggerFactory.getLogger(GameManager.class);
-    private static final Random RANDOM = new Random(); // FIX: Declared and Initialized
+    private static final Random RANDOM = new Random();
 
     // --- New Recipe/Order Data ---
     private static final List<String> ALL_RECIPES = Arrays.asList(
@@ -45,8 +44,15 @@ public class GameManager {
             "BLT Burger Dish", 150,
             "Deluxe Burger Dish", 200
     );
-    private static final int MIN_ORDER_TIME = 45;
-    private static final int MAX_ORDER_TIME = 90;
+
+    // FIX: Define fixed time limits for each recipe
+    private static final Map<String, Integer> RECIPE_TIME_LIMIT = Map.of(
+            "Classic Burger Dish", 45, // 45 seconds
+            "Cheese Burger Dish", 60,  // 60 seconds
+            "BLT Burger Dish", 75,     // 75 seconds
+            "Deluxe Burger Dish", 75   // 75 seconds
+    );
+
     private static final int MAX_ACTIVE_ORDERS = 2; // Maximum orders at a time
     // --- End Recipe/Order Data ---
 
@@ -63,7 +69,7 @@ public class GameManager {
     private StringProperty activeChefName = new SimpleStringProperty("");
 
     private ScheduledExecutorService timerScheduler;
-    private ScheduledExecutorService orderScheduler; // FIX: Declared
+    private ScheduledExecutorService orderScheduler;
     private IntegerProperty timeRemaining = new SimpleIntegerProperty(180);
     private ObservableList<Order> orders = FXCollections.observableArrayList();
     private final int MAX_GAME_DURATION = 180; // 3 menit (Contoh)
@@ -143,7 +149,7 @@ public class GameManager {
                 if (current > 0) {
                     timeRemaining.set(current - 1);
 
-                    // Decrement time for active orders
+                    // Decrement time for active orders (running simultaneously)
                     orders.removeIf(order -> {
                         order.setTimeLeft(order.getTimeLeft() - 1);
                         if (order.getTimeLeft() <= 0) {
@@ -176,7 +182,9 @@ public class GameManager {
 
         // Randomly select a recipe
         String recipe = ALL_RECIPES.get(RANDOM.nextInt(ALL_RECIPES.size()));
-        int time = RANDOM.nextInt(MAX_ORDER_TIME - MIN_ORDER_TIME) + MIN_ORDER_TIME;
+
+        // FIX: Look up the fixed time limit
+        int time = RECIPE_TIME_LIMIT.getOrDefault(recipe, 60);
         int reward = RECIPE_REWARD.get(recipe);
 
         // Generate a simple ID (max current ID + 1)
@@ -187,7 +195,7 @@ public class GameManager {
 
         Order newOrder = new Order(newId, recipe, time, reward);
         orders.add(newOrder);
-        logger.info("New Order received: {} (Reward: {})", newOrder.getRecipe(), newOrder.getReward());
+        logger.info("New Order received: {} (Reward: {}, Time: {}s)", newOrder.getRecipe(), newOrder.getReward(), newOrder.getTimeLeft());
     }
 
     /**
