@@ -28,13 +28,53 @@ public class Dish extends Item {
             this.name = "Empty Dish";
             return;
         }
-        StringBuilder sb = new StringBuilder("Burger [");
-        for (Ingredient i : components) {
-            sb.append(i.getType().label).append(", ");
+
+        boolean hasBun = this.contains(IngredientType.BUN);
+        boolean hasCookedMeat = false;
+        boolean hasChoppedCheese = false;
+        boolean hasChoppedTomatoes = false;
+        boolean hasChoppedLettuce = false;
+
+        for (Ingredient i : this.getComponents()) {
+            if (i.getType() == IngredientType.MEAT && i.getState() == IngredientState.COOKED) {
+                hasCookedMeat = true;
+            }
+            if (i.getType() == IngredientType.CHEESE && i.getState() == IngredientState.CHOPPED) {
+                hasChoppedCheese = true;
+            }
+            if (i.getType() == IngredientType.TOMATO && i.getState() == IngredientState.CHOPPED) {
+                hasChoppedTomatoes = true;
+            }
+            if (i.getType() == IngredientType.LETTUCE && i.getState() == IngredientState.CHOPPED) {
+                hasChoppedLettuce = true;
+            }
         }
-        sb.setLength(sb.length() - 2); 
-        sb.append("]");
-        this.name = sb.toString();
+
+        if (this.getComponents().size() == 2 && hasBun && hasCookedMeat) {
+            this.name = "Classic Burger";
+        }
+
+        if (this.getComponents().size() == 3 && hasBun && hasCookedMeat && hasChoppedCheese) {
+            this.name = "Cheese Burger";
+        }
+
+        if (this.getComponents().size() == 4 && hasBun && hasCookedMeat && hasChoppedTomatoes && hasChoppedLettuce) {
+            this.name = "BLT Burger";
+        }
+
+        if (this.getComponents().size() == 4 && hasBun && hasCookedMeat && hasChoppedCheese && hasChoppedLettuce) {
+            this.name = "Deluxe Burger";
+        }
+
+        else {
+            StringBuilder sb = new StringBuilder("Burger [");
+            for (Ingredient i : components) {
+                sb.append(i.getType().label).append(", ");
+            }
+            sb.setLength(sb.length() - 2);
+            sb.append("]");
+            this.name = sb.toString();
+        }
     }
     
     public boolean contains(IngredientType type) {

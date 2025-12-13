@@ -22,7 +22,7 @@ import org.example.map.station.*;
 import org.example.chef.Chef;
 import org.example.chef.Direction;
 import org.example.model.Order;
-import org.example.item.Item;
+import org.example.item.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -136,10 +136,10 @@ public class GamePanel extends BorderPane {
             itemImages.put("BLT Burger", new Image(getClass().getResourceAsStream("/asset/item/menu/bltburger.png")));
             itemImages.put("Deluxe Burger", new Image(getClass().getResourceAsStream("/asset/item/menu/deluxeburger.png")));
 
-            itemImages.put("Classic Burger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_classicburger.png")));
-            itemImages.put("CheeseBurger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_cheeseburger.png")));
-            itemImages.put("BLT Burger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_bltburger.png")));
-            itemImages.put("Deluxe Burger", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_deluxeburger.png")));
+            itemImages.put("Classic Burger Dish", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_classicburger.png")));
+            itemImages.put("CheeseBurger Dish", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_cheeseburger.png")));
+            itemImages.put("BLT Burger Dish", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_bltburger.png")));
+            itemImages.put("Deluxe Burger Dish", new Image(getClass().getResourceAsStream("/asset/item/dish/dish_deluxeburger.png")));
 
             itemImages.put("Plate", new Image(getClass().getResourceAsStream("/asset/item/utensil/plate.png")));
             itemImages.put("Frying Pan", new Image(getClass().getResourceAsStream("/asset/item/utensil/fryingpan.png")));
@@ -153,8 +153,8 @@ public class GamePanel extends BorderPane {
     private String getImageKey(Item item) {
         if (item == null) return null;
 
-        if (item instanceof org.example.item.Ingredient) {
-            org.example.item.Ingredient ing = (org.example.item.Ingredient) item;
+        if (item instanceof Ingredient) {
+            Ingredient ing = (Ingredient) item;
             
             String typeLabel = ing.getType().label; 
             

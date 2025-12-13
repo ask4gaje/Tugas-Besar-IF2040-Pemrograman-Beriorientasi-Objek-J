@@ -27,15 +27,17 @@ public class CuttingStation extends AbstractStation {
         }
 
         if (this.itemOnTile != null) {
-            if (this.itemOnTile instanceof Ingredient) {
-                Ingredient ingredient = (Ingredient) this.itemOnTile;
+            if (this.itemOnTile instanceof Ingredient ingredient) {
 
                 if (ingredient.canBeChopped()) {
                     
                     LOGGER.info("{} started cutting {}...", chef.getName(), ingredient.getName());
                     
                     chef.performLongAction(CUTTING_TIME_SECONDS, () -> {
-                        ingredient.chop(); 
+                        ingredient.chop();
+                        if (ingredient.getType() == IngredientType.MEAT){
+                            ingredient.cook();
+                        }
                         LOGGER.info("Cutting finished! Item is now {}", ingredient.getName());
                     });
                     

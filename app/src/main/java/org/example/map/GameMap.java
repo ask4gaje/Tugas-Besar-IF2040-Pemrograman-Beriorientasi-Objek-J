@@ -89,11 +89,11 @@ public class GameMap {
                         break;
                     case 'I':
                         IngredientType type = IngredientType.BUN;
-                        if (x == 0 && y == 2) type = IngredientType.BUN;      
+                        if (x == 0 && y == 2) type = IngredientType.TOMATO;
                         else if (x == 0 && y == 4) type = IngredientType.MEAT; 
                         else if (x == 0 && y == 6) type = IngredientType.CHEESE;
-                        else if (x == 8 && y == 0) type = IngredientType.LETTUCE; 
-                        else if (x == 5 && y == 4) type = IngredientType.TOMATO;  
+                        else if (x == 7 && y == 8) type = IngredientType.LETTUCE;
+                        else if (x == 7 && y == 0) type = IngredientType.BUN;
                         grid[y][x] = new IngredientStorage(pos, type);
                         break;
                     case 'P':
