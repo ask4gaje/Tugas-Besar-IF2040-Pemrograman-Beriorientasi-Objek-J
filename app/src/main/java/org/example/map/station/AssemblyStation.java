@@ -2,7 +2,9 @@ package org.example.map.station;
 
 import org.example.chef.Chef;
 import org.example.chef.Position;
+import org.example.item.FryingPan;
 import org.example.item.Ingredient;
+import org.example.item.IngredientState;
 import org.example.item.Item;
 import org.example.item.Plate;
 import org.slf4j.Logger;
@@ -21,6 +23,7 @@ public class AssemblyStation extends AbstractStation {
     @Override
     public void pickUp(Chef chef) {
         Item heldItem = chef.getInventory();
+        Item itemOnStation = this.itemOnTile;
 
         if (heldItem instanceof Plate plate && itemOnTile instanceof Ingredient ingredient) {
             if (ingredient.canBePlacedOnPlate()) {
@@ -46,14 +49,36 @@ public class AssemblyStation extends AbstractStation {
             }
         }
 
-        if (itemOnTile != null && heldItem == null) {
+        if (heldItem instanceof FryingPan pan) {
+            if (!pan.getContents().isEmpty() && pan.getContents().get(0) instanceof Ingredient meat) {
+                
+                if (meat.getState() == IngredientState.COOKED) {
+                    
+                    if (itemOnStation instanceof Plate plate) {
+                        plate.addDishComponent(meat);
+                        pan.getContents().clear(); 
+                        LOGGER.info("Menuang daging matang dari Pan ke Piring.");
+                        return; 
+                    }
+                    
+                    else if (itemOnStation == null) {
+                        this.itemOnTile = meat; 
+                        pan.getContents().clear();
+                        LOGGER.info("Menuang daging matang ke Assembly Station.");
+                        return; 
+                    }
+                }
+            }
+        }
+
+        if (itemOnStation != null && heldItem == null) {
             chef.setInventory(this.itemOnTile);
             this.itemOnTile = null;
             LOGGER.info("{} took {} from Assembly Station.", chef.getName(), chef.getInventory().getName());
             return;
         }
 
-        else if (itemOnTile == null && heldItem != null) {
+        else if (itemOnStation == null && heldItem != null) {
             this.itemOnTile = chef.dropItem();
             LOGGER.info("{} placed {} on Assembly Station.", chef.getName(), itemOnTile.getName());
             return;

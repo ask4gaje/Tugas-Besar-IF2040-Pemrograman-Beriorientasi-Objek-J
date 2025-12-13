@@ -3,6 +3,7 @@ package org.example.map.station;
 import org.example.chef.Chef;
 import org.example.chef.Position;
 import org.example.item.CookingDevice;
+import org.example.item.FryingPan;
 import org.example.item.Ingredient;
 import org.example.item.Item;
 import org.example.item.KitchenUtensil;
@@ -21,6 +22,7 @@ public class CookingStation extends AbstractStation {
 
     public CookingStation(Position position) {
         super(position);
+        this.itemOnTile = new FryingPan();
     }
     
     /**
@@ -90,8 +92,12 @@ public class CookingStation extends AbstractStation {
             
             // B. Place item on empty station (this includes placing the FryingPan/Utensil)
             if (itemOnStation == null) {
-                this.itemOnTile = chef.dropItem();
-                LOGGER.info("{} placed {} on Cooking Station.", chef.getName(), itemOnTile.getName());
+                if (heldItem instanceof FryingPan) {
+                    this.itemOnTile = chef.dropItem();
+                    LOGGER.info("{} placed Frying Pan on Cooking Station.", chef.getName());
+                } else {
+                    LOGGER.warn("Cannot place {} directly on stove! Need a Frying Pan.", heldItem.getName());
+                }
                 return;
             }
         }

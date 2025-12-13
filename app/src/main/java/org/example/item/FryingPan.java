@@ -23,11 +23,10 @@ public class FryingPan extends KitchenUtensil implements CookingDevice {
 
     @Override
     public boolean canAccept(Ingredient ingredient) {
-        if (ingredient instanceof Ingredient) {
-            Ingredient i = (Ingredient) ingredient;
-            return i.getType() == IngredientType.MEAT && !isCooking && contents.isEmpty();
-        }
-        return false;
+        return ingredient.getType() == IngredientType.MEAT 
+            && ingredient.getState() == IngredientState.CHOPPED 
+            && !isCooking 
+            && contents.isEmpty();
     }
 
     @Override

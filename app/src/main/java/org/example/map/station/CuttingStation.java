@@ -35,9 +35,6 @@ public class CuttingStation extends AbstractStation {
                     
                     chef.performLongAction(CUTTING_TIME_SECONDS, () -> {
                         ingredient.chop();
-                        if (ingredient.getType() == IngredientType.MEAT){
-                            ingredient.cook();
-                        }
                         LOGGER.info("Cutting finished! Item is now {}", ingredient.getName());
                     });
                     
