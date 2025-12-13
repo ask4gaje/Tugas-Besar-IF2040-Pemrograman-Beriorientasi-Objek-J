@@ -101,7 +101,7 @@ public class GamePanel extends BorderPane {
 
         hudBox.getChildren().addAll(title, timeLabel, scoreLabel, active, new Label("Orders:"), orderList);
 
-        hudBox.setVisible(false);
+        this.setRight(hudBox);
         loadImages();
 
         this.setOnMouseMoved(e -> {
