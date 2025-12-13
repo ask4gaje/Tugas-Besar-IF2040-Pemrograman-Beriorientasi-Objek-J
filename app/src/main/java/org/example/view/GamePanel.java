@@ -186,8 +186,9 @@ public class GamePanel extends BorderPane {
             itemImages.put("platelt", new Image(getClass().getResourceAsStream("/asset/platecombi/platelt.png")));
 
             itemImages.put("platerdk", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdk.png")));
-            itemImages.put("platerdl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdl.png")));
             itemImages.put("platerdt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdt.png")));
+            itemImages.put("platerdl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdl.png")));
+            itemImages.put("platerlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerlt.png")));
             itemImages.put("platedkl", new Image(getClass().getResourceAsStream("/asset/platecombi/platedkl.png")));
             itemImages.put("platedkt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedkt.png")));
             itemImages.put("platedlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedlt.png")));
