@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -25,6 +26,7 @@ import org.example.model.Order;
 import org.example.item.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GamePanel extends BorderPane {
@@ -72,6 +74,28 @@ public class GamePanel extends BorderPane {
 
         orderList = new ListView<>(manager.getOrders());
         orderList.setPrefHeight(300);
+
+        orderList.setCellFactory(lv -> new ListCell<Order>() {
+            @Override
+            protected void updateItem(Order order, boolean empty) {
+                super.updateItem(order, empty);
+
+                // Clear old bindings
+                textProperty().unbind();
+
+                if (empty || order == null) {
+                    setText(null);
+                } else {
+                    // Bind the ListCell's text property to the Order's timeLeftProperty.
+                    // This creates a listener that automatically updates the text
+                    // whenever the order's timeLeftProperty value changes.
+                    textProperty().bind(Bindings.createStringBinding(
+                            () -> "#" + order.getId() + "  " + order.getRecipe() + " (" + order.timeLeftProperty().get() + "s)",
+                            order.timeLeftProperty()
+                    ));
+                }
+            }
+        });
 
         hudBox.getChildren().addAll(title, timeLabel, scoreLabel, active, new Label("Orders:"), orderList);
 
@@ -144,10 +168,85 @@ public class GamePanel extends BorderPane {
             itemImages.put("Plate", new Image(getClass().getResourceAsStream("/asset/item/utensil/plate.png")));
             itemImages.put("Frying Pan", new Image(getClass().getResourceAsStream("/asset/item/utensil/fryingpan.png")));
 
+            itemImages.put("plater", new Image(getClass().getResourceAsStream("/asset/platecombi/plater.png")));
+            itemImages.put("plated", new Image(getClass().getResourceAsStream("/asset/platecombi/plated.png")));
+            itemImages.put("platek", new Image(getClass().getResourceAsStream("/asset/platecombi/platek.png")));
+            itemImages.put("platel", new Image(getClass().getResourceAsStream("/asset/platecombi/platel.png")));
+            itemImages.put("platet", new Image(getClass().getResourceAsStream("/asset/platecombi/platet.png")));
+
+            itemImages.put("platerd", new Image(getClass().getResourceAsStream("/asset/platecombi/platerd.png")));
+            itemImages.put("platerk", new Image(getClass().getResourceAsStream("/asset/platecombi/platerk.png")));
+            itemImages.put("platerl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerl.png")));
+            itemImages.put("platert", new Image(getClass().getResourceAsStream("/asset/platecombi/platert.png")));
+            itemImages.put("platedk", new Image(getClass().getResourceAsStream("/asset/platecombi/platedk.png")));
+            itemImages.put("platedl", new Image(getClass().getResourceAsStream("/asset/platecombi/platedl.png")));
+            itemImages.put("platedt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedt.png")));
+            itemImages.put("platekl", new Image(getClass().getResourceAsStream("/asset/platecombi/platekl.png")));
+            itemImages.put("platekt", new Image(getClass().getResourceAsStream("/asset/platecombi/platekt.png")));
+            itemImages.put("platelt", new Image(getClass().getResourceAsStream("/asset/platecombi/platelt.png")));
+
+            itemImages.put("platerdk", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdk.png")));
+            itemImages.put("platerdl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdl.png")));
+            itemImages.put("platerdt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdt.png")));
+            itemImages.put("platedkl", new Image(getClass().getResourceAsStream("/asset/platecombi/platedkl.png")));
+            itemImages.put("platedkt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedkt.png")));
+            itemImages.put("platedlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedlt.png")));
+            itemImages.put("plateklt", new Image(getClass().getResourceAsStream("/asset/platecombi/plateklt.png")));
+
+            itemImages.put("platerdkl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdkl.png")));
+            itemImages.put("platerdkt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdkt.png")));
+            itemImages.put("platerdlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdlt.png")));
+            itemImages.put("platerklt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerklt.png")));
             
         } catch (Exception e) {
             System.err.println("Warning: Beberapa gambar gagal dimuat. Menggunakan fallback warna.");
         }
+    }
+
+    private String getPlateCombinationKey(Plate plate) {
+        List<Preparable> rawContents = plate.getContents();
+        if (rawContents.isEmpty()) {
+            return "Plate";
+        }
+
+        // Fixed order: r (Bun), d (Meat), k (Cheese), l (Lettuce), t (Tomato)
+        // This order MUST match the asset file naming convention.
+        boolean hasRoti = false;
+        boolean hasDaging = false;
+        boolean hasKeju = false;
+        boolean hasLettuce = false;
+        boolean hasTomat = false;
+
+        for (Preparable p : rawContents) {
+            if (p instanceof Ingredient ingredient) {
+                // Only include ingredients that are in the prepared state
+                // (Plate.addDishComponent logic ensures canBePlacedOnPlate() is true)
+                if (ingredient.canBePlacedOnPlate()) {
+                    switch (ingredient.getType()) {
+                        case BUN -> hasRoti = true;
+                        case MEAT -> hasDaging = true;
+                        case CHEESE -> hasKeju = true;
+                        case LETTUCE -> hasLettuce = true;
+                        case TOMATO -> hasTomat = true;
+                        default -> {}
+                    }
+                }
+            }
+        }
+
+        StringBuilder keyBuilder = new StringBuilder("plate");
+        if (hasRoti) keyBuilder.append("r");
+        if (hasDaging) keyBuilder.append("d");
+        if (hasKeju) keyBuilder.append("k");
+        if (hasLettuce) keyBuilder.append("l");
+        if (hasTomat) keyBuilder.append("t");
+
+        // If no prepared ingredients, return "Plate"
+        if (keyBuilder.length() == 5) {
+            return "Plate";
+        }
+
+        return keyBuilder.toString();
     }
 
     private String getImageKey(Item item) {
@@ -155,19 +254,30 @@ public class GamePanel extends BorderPane {
 
         if (item instanceof Ingredient) {
             Ingredient ing = (Ingredient) item;
-            
-            String typeLabel = ing.getType().label; 
-            
+
+            String typeLabel = ing.getType().label;
+
             if (typeLabel.equalsIgnoreCase("Roti")) {
                 return "Roti";
             }
 
-            String state = ing.getState().toString(); 
-        
+            String state = ing.getState().toString();
+
             String stateFormatted = state.charAt(0) + state.substring(1).toLowerCase();
-            
+
             return typeLabel + " " + stateFormatted;
         }
+
+        // --- MODIFIED LOGIC FOR PLATE ---
+        if (item instanceof Plate plate) {
+            // 1. If the plate has a final dish name (e.g., "Classic Burger Dish"), use the full menu image.
+            if (itemImages.containsKey(item.getName())) {
+                return item.getName();
+            }
+            // 2. Otherwise, use the combination logic to get the composite image.
+            return getPlateCombinationKey(plate);
+        }
+        // --- END MODIFIED LOGIC FOR PLATE ---
 
         return item.getName();
     }
