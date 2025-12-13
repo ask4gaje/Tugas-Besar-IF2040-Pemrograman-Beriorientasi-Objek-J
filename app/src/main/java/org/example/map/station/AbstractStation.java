@@ -8,7 +8,7 @@ import org.example.chef.Chef;
 public abstract class AbstractStation implements Tile {
     protected Position position;
     protected Item itemOnTile; // Tempat menaruh item di atas station
-    
+
     public AbstractStation(Position position) {
         this.position = position;
     }
@@ -21,12 +21,12 @@ public abstract class AbstractStation implements Tile {
     @Override
     public boolean isWalkable() {
         // Station umumnya tidak bisa diinjak
-        return false; 
+        return false;
     }
-    
+
     @Override
-    public Item getItemOnTile() { 
-        return itemOnTile; 
+    public Item getItemOnTile() {
+        return itemOnTile;
     }
 
     @Override

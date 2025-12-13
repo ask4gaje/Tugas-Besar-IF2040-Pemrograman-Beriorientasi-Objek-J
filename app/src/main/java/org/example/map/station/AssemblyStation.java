@@ -2,11 +2,13 @@ package org.example.map.station;
 
 import org.example.chef.Chef;
 import org.example.chef.Position;
-import org.example.item.FryingPan;
 import org.example.item.Ingredient;
-import org.example.item.IngredientState;
 import org.example.item.Item;
 import org.example.item.Plate;
+import org.example.item.FryingPan; // ADDED
+import org.example.item.KitchenUtensil;
+import org.example.item.Preparable;
+import java.util.List; // ADDED
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,34 @@ public class AssemblyStation extends AbstractStation {
     @Override
     public void pickUp(Chef chef) {
         Item heldItem = chef.getInventory();
-        Item itemOnStation = this.itemOnTile;
+        Item itemOnStation = itemOnTile;
+
+        if (heldItem instanceof FryingPan fryingPan && itemOnStation instanceof Plate plate && !fryingPan.getContents().isEmpty()) {
+            Preparable content = fryingPan.getContents().get(0);
+            if (content instanceof Ingredient ingredient && ingredient.canBePlacedOnPlate()) {
+                plate.addDishComponent(ingredient);
+                fryingPan.clearContents();
+                LOGGER.info("{} transferred {} from Frying Pan onto Plate on Assembly Station.", chef.getName(), ingredient.getName());
+                return;
+            } else {
+                LOGGER.warn("Cannot transfer: Item in Frying Pan is not prepared or cannot be placed on a plate.");
+                return;
+            }
+        }
+
+        if (heldItem instanceof FryingPan fryingPan && itemOnStation == null) {
+            List<Preparable> contents = fryingPan.getContents();
+            if (!contents.isEmpty()) {
+                Ingredient ingredientToDump = (Ingredient) contents.get(0);
+
+                this.itemOnTile = ingredientToDump;
+
+                fryingPan.clearContents();
+
+                LOGGER.info("{} dumped {} from Frying Pan onto Assembly Station.", chef.getName(), ingredientToDump.getName());
+                return;
+            }
+        }
 
         if (heldItem instanceof Plate plate && itemOnTile instanceof Ingredient ingredient) {
             if (ingredient.canBePlacedOnPlate()) {
@@ -49,36 +78,14 @@ public class AssemblyStation extends AbstractStation {
             }
         }
 
-        if (heldItem instanceof FryingPan pan) {
-            if (!pan.getContents().isEmpty() && pan.getContents().get(0) instanceof Ingredient meat) {
-                
-                if (meat.getState() == IngredientState.COOKED) {
-                    
-                    if (itemOnStation instanceof Plate plate) {
-                        plate.addDishComponent(meat);
-                        pan.getContents().clear(); 
-                        LOGGER.info("Menuang daging matang dari Pan ke Piring.");
-                        return; 
-                    }
-                    
-                    else if (itemOnStation == null) {
-                        this.itemOnTile = meat; 
-                        pan.getContents().clear();
-                        LOGGER.info("Menuang daging matang ke Assembly Station.");
-                        return; 
-                    }
-                }
-            }
-        }
-
-        if (itemOnStation != null && heldItem == null) {
+        if (itemOnTile != null && heldItem == null) {
             chef.setInventory(this.itemOnTile);
             this.itemOnTile = null;
             LOGGER.info("{} took {} from Assembly Station.", chef.getName(), chef.getInventory().getName());
             return;
         }
 
-        else if (itemOnStation == null && heldItem != null) {
+        else if (itemOnTile == null && heldItem != null) {
             this.itemOnTile = chef.dropItem();
             LOGGER.info("{} placed {} on Assembly Station.", chef.getName(), itemOnTile.getName());
             return;

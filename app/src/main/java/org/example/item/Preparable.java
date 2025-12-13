@@ -8,7 +8,8 @@ public interface Preparable {
     boolean canBeCooked();
     boolean canBePlacedOnPlate();
     void chop();
-    void cook();
-    void burn(); 
+    void cooked();
+    void burn();
+    void cooking();
 }
 

@@ -45,6 +45,7 @@ public class GameManager {
     );
 
     private static final Map<String, Integer> RECIPE_TIME_LIMIT = Map.of(
+<<<<<<< HEAD
             "Classic Burger Dish", 45, 
             "Cheese Burger Dish", 60,  
             "BLT Burger Dish", 75,     
@@ -52,6 +53,15 @@ public class GameManager {
     );
 
     private static final int MAX_ACTIVE_ORDERS = 2; 
+=======
+            "Classic Burger Dish", 60,
+            "Cheese Burger Dish", 75,
+            "BLT Burger Dish", 90,
+            "Deluxe Burger Dish", 90
+    );
+
+    private static final int MAX_ACTIVE_ORDERS = 2;
+>>>>>>> 0e9bc1f14e1602c40b2a8216cc6d9b8882b51b91
 
     private static GameManager instance;
 
@@ -70,7 +80,7 @@ public class GameManager {
     private ScheduledExecutorService orderScheduler;
     private IntegerProperty timeRemaining = new SimpleIntegerProperty(180);
     private ObservableList<Order> orders = FXCollections.observableArrayList();
-    private final int MAX_GAME_DURATION = 180; // 3 menit (Contoh)
+    private final int MAX_GAME_DURATION = 300;
     private final int MAX_FAILED_ORDERS = 5;
 
     private GameManager() {
@@ -188,14 +198,11 @@ public class GameManager {
             return;
         }
 
-        // Randomly select a recipe
         String recipe = ALL_RECIPES.get(RANDOM.nextInt(ALL_RECIPES.size()));
 
-        // FIX: Look up the fixed time limit
         int time = RECIPE_TIME_LIMIT.getOrDefault(recipe, 60);
         int reward = RECIPE_REWARD.get(recipe);
 
-        // Generate a simple ID (max current ID + 1)
         int newId = 1;
         if (!orders.isEmpty()) {
             newId = orders.stream().mapToInt(Order::getId).max().orElse(0) + 1;
@@ -206,11 +213,6 @@ public class GameManager {
         logger.info("New Order received: {} (Reward: {}, Time: {}s)", newOrder.getRecipe(), newOrder.getReward(), newOrder.getTimeLeft());
     }
 
-    /**
-     * Attempts to validate the served item against existing orders.
-     * @param servedItem The item (should be a Plate) served by the chef.
-     * @return The score obtained, or 0 if invalid/no matching order.
-     */
     public int validateOrder(Item servedItem) {
         if (!(servedItem instanceof Plate plate)) {
             logger.warn("Served item is not a Plate. Invalid service.");
@@ -218,10 +220,8 @@ public class GameManager {
             return 0;
         }
 
-        // Get the official name of the completed dish from the Plate object
         String dishName = plate.getName();
 
-        // Find a matching order
         Order matchedOrder = null;
         for (Order order : orders) {
             if (order.getRecipe().equals(dishName)) {

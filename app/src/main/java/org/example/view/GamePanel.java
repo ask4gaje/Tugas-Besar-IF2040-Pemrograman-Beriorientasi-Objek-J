@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -25,6 +26,7 @@ import org.example.model.Order;
 import org.example.item.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class GamePanel extends BorderPane {
@@ -74,6 +76,28 @@ public class GamePanel extends BorderPane {
 
         orderList = new ListView<>(manager.getOrders());
         orderList.setPrefHeight(300);
+
+        orderList.setCellFactory(lv -> new ListCell<Order>() {
+            @Override
+            protected void updateItem(Order order, boolean empty) {
+                super.updateItem(order, empty);
+
+                // Clear old bindings
+                textProperty().unbind();
+
+                if (empty || order == null) {
+                    setText(null);
+                } else {
+                    // Bind the ListCell's text property to the Order's timeLeftProperty.
+                    // This creates a listener that automatically updates the text
+                    // whenever the order's timeLeftProperty value changes.
+                    textProperty().bind(Bindings.createStringBinding(
+                            () -> "#" + order.getId() + "  " + order.getRecipe() + " (" + order.timeLeftProperty().get() + "s)",
+                            order.timeLeftProperty()
+                    ));
+                }
+            }
+        });
 
         hudBox.getChildren().addAll(title, timeLabel, scoreLabel, active, new Label("Orders:"), orderList);
 
@@ -158,10 +182,91 @@ public class GamePanel extends BorderPane {
             itemImages.put("Plate", new Image(getClass().getResourceAsStream("/asset/item/utensil/plate.png")));
             itemImages.put("Frying Pan", new Image(getClass().getResourceAsStream("/asset/item/utensil/fryingpan.png")));
 
+            itemImages.put("Pan Raw", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_raw.png")));
+            itemImages.put("Pan Cooking", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_cooking.png")));
+            itemImages.put("Pan Cooked", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_cooked.png")));
+            itemImages.put("Pan Burned", new Image(getClass().getResourceAsStream("/asset/meatpan/pan_burned.png")));
+
+            itemImages.put("plater", new Image(getClass().getResourceAsStream("/asset/platecombi/plater.png")));
+            itemImages.put("plated", new Image(getClass().getResourceAsStream("/asset/platecombi/plated.png")));
+            itemImages.put("platek", new Image(getClass().getResourceAsStream("/asset/platecombi/platek.png")));
+            itemImages.put("platel", new Image(getClass().getResourceAsStream("/asset/platecombi/platel.png")));
+            itemImages.put("platet", new Image(getClass().getResourceAsStream("/asset/platecombi/platet.png")));
+
+            itemImages.put("platerd", new Image(getClass().getResourceAsStream("/asset/platecombi/platerd.png")));
+            itemImages.put("platerk", new Image(getClass().getResourceAsStream("/asset/platecombi/platerk.png")));
+            itemImages.put("platerl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerl.png")));
+            itemImages.put("platert", new Image(getClass().getResourceAsStream("/asset/platecombi/platert.png")));
+            itemImages.put("platedk", new Image(getClass().getResourceAsStream("/asset/platecombi/platedk.png")));
+            itemImages.put("platedl", new Image(getClass().getResourceAsStream("/asset/platecombi/platedl.png")));
+            itemImages.put("platedt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedt.png")));
+            itemImages.put("platekl", new Image(getClass().getResourceAsStream("/asset/platecombi/platekl.png")));
+            itemImages.put("platekt", new Image(getClass().getResourceAsStream("/asset/platecombi/platekt.png")));
+            itemImages.put("platelt", new Image(getClass().getResourceAsStream("/asset/platecombi/platelt.png")));
+
+            itemImages.put("platerdk", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdk.png")));
+            itemImages.put("platerdt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdt.png")));
+            itemImages.put("platerdl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdl.png")));
+            itemImages.put("platerlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerlt.png")));
+            itemImages.put("platedkl", new Image(getClass().getResourceAsStream("/asset/platecombi/platedkl.png")));
+            itemImages.put("platedkt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedkt.png")));
+            itemImages.put("platedlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platedlt.png")));
+            itemImages.put("plateklt", new Image(getClass().getResourceAsStream("/asset/platecombi/plateklt.png")));
+
+            itemImages.put("platerdkl", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdkl.png")));
+            itemImages.put("platerdkt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdkt.png")));
+            itemImages.put("platerdlt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerdlt.png")));
+            itemImages.put("platerklt", new Image(getClass().getResourceAsStream("/asset/platecombi/platerklt.png")));
             
         } catch (Exception e) {
             System.err.println("Warning: Beberapa gambar gagal dimuat. Menggunakan fallback warna.");
         }
+    }
+
+    private String getPlateCombinationKey(Plate plate) {
+        List<Preparable> rawContents = plate.getContents();
+        if (rawContents.isEmpty()) {
+            return "Plate";
+        }
+
+        // Fixed order: r (Bun), d (Meat), k (Cheese), l (Lettuce), t (Tomato)
+        // This order MUST match the asset file naming convention.
+        boolean hasRoti = false;
+        boolean hasDaging = false;
+        boolean hasKeju = false;
+        boolean hasLettuce = false;
+        boolean hasTomat = false;
+
+        for (Preparable p : rawContents) {
+            if (p instanceof Ingredient ingredient) {
+                // Only include ingredients that are in the prepared state
+                // (Plate.addDishComponent logic ensures canBePlacedOnPlate() is true)
+                if (ingredient.canBePlacedOnPlate()) {
+                    switch (ingredient.getType()) {
+                        case BUN -> hasRoti = true;
+                        case MEAT -> hasDaging = true;
+                        case CHEESE -> hasKeju = true;
+                        case LETTUCE -> hasLettuce = true;
+                        case TOMATO -> hasTomat = true;
+                        default -> {}
+                    }
+                }
+            }
+        }
+
+        StringBuilder keyBuilder = new StringBuilder("plate");
+        if (hasRoti) keyBuilder.append("r");
+        if (hasDaging) keyBuilder.append("d");
+        if (hasKeju) keyBuilder.append("k");
+        if (hasLettuce) keyBuilder.append("l");
+        if (hasTomat) keyBuilder.append("t");
+
+        // If no prepared ingredients, return "Plate"
+        if (keyBuilder.length() == 5) {
+            return "Plate";
+        }
+
+        return keyBuilder.toString();
     }
 
     private String getImageKey(Item item) {
@@ -169,20 +274,44 @@ public class GamePanel extends BorderPane {
 
         if (item instanceof Ingredient) {
             Ingredient ing = (Ingredient) item;
-            
-            String typeLabel = ing.getType().label; 
-            
+
+            String typeLabel = ing.getType().label;
+
             if (typeLabel.equalsIgnoreCase("Roti")) {
                 return "Roti";
             }
 
-            String state = ing.getState().toString(); 
-        
+            String state = ing.getState().toString();
+
             String stateFormatted = state.charAt(0) + state.substring(1).toLowerCase();
-            
+
             return typeLabel + " " + stateFormatted;
         }
 
+        if (item instanceof FryingPan fryingPan) {
+            List<Preparable> contents = fryingPan.getContents();
+            if (!contents.isEmpty() && contents.get(0) instanceof Ingredient ingredient) {
+                switch (ingredient.getState()) {
+                    case RAW:
+                    case CHOPPED:
+                        return "Pan Raw";
+                    case COOKING:
+                        return "Pan Cooking";
+                    case COOKED:
+                        return "Pan Cooked";
+                    case BURNED:
+                        return "Pan Burned";
+                    default:
+                        break;
+                }
+            }
+        }
+        if (item instanceof Plate plate) {
+            if (itemImages.containsKey(item.getName())) {
+                return item.getName();
+            }
+            return getPlateCombinationKey(plate);
+        }
         return item.getName();
     }
 
@@ -361,26 +490,73 @@ public class GamePanel extends BorderPane {
     }
 
     private void drawProgressBars(GraphicsContext g) {
-        if (manager.getChefs() == null) return;
+        GameMap map = manager.getCurrentMap();
+        if (map == null) return;
 
-        for (Chef c : manager.getChefs()) {
-            Double prog = manager.getProgress(c.getName()).get();
-            
-            if (prog > 0 && prog < 1.0) {
-                double x = c.getPosition().getX() * TILE;
-                double y = c.getPosition().getY() * TILE - 10;
-                double width = TILE - 8;
+        // --- Draw Chef Action Progress Bars (Existing Logic) ---
+        if (manager.getChefs() != null) {
+            for (Chef c : manager.getChefs()) {
+                Double prog = manager.getProgress(c.getName()).get();
 
-                g.setFill(Color.gray(0.3));
-                g.fillRect(x + 4, y, width, 6);
+                if (prog > 0 && prog < 1.0) {
+                    double x = c.getPosition().getX() * TILE;
+                    double y = c.getPosition().getY() * TILE - 10;
+                    double width = TILE - 8;
 
-                g.setFill(Color.LIME);
-                g.fillRect(x + 4, y, width * prog, 6);
+                    g.setFill(Color.gray(0.3));
+                    g.fillRect(x + 4, y, width, 6);
 
-                g.setStroke(Color.BLACK);
-                g.strokeRect(x + 4, y, width, 6);
+                    g.setFill(Color.LIME);
+                    g.fillRect(x + 4, y, width * prog, 6);
+
+                    g.setStroke(Color.BLACK);
+                    g.strokeRect(x + 4, y, width, 6);
+                }
+            }
+        }
+        // --- End Chef Action Progress Bars ---
+
+        // --- Draw Station Progress Bars (New Logic) ---
+        for (int x = 0; x < 14; x++) {
+            for (int y = 0; y < 10; y++) {
+                Tile t = map.getTile(x, y);
+
+                if (t instanceof CookingStation cs) {
+                    double cookingProg = cs.cookingProgressProperty().get();
+                    double burnProg = cs.burnProgressProperty().get();
+                    double sx = x * TILE;
+                    double sy = y * TILE;
+                    double width = TILE - 8;
+
+                    // Draw Cooking Progress Bar (Green)
+                    if (cookingProg > 0.0 && cookingProg < 1.0) {
+                        double barY = sy - 15;
+                        g.setFill(Color.gray(0.3));
+                        g.fillRect(sx + 4, barY, width, 6);
+
+                        g.setFill(Color.YELLOWGREEN);
+                        g.fillRect(sx + 4, barY, width * cookingProg, 6);
+
+                        g.setStroke(Color.BLACK);
+                        g.strokeRect(sx + 4, barY, width, 6);
+                    }
+
+                    // Draw Burn Timer Progress Bar (Orange/Red)
+                    if (burnProg > 0.0) {
+                        double barY = sy - 8;
+                        Color barColor = burnProg < 1.0 ? Color.ORANGE : Color.RED;
+
+                        g.setFill(Color.gray(0.3));
+                        g.fillRect(sx + 4, barY, width, 6);
+
+                        g.setFill(barColor);
+                        g.fillRect(sx + 4, barY, width * burnProg, 6);
+
+                        g.setStroke(Color.BLACK);
+                        g.strokeRect(sx + 4, barY, width, 6);
+                    }
+                }
             }
         }
     }
-
 }
